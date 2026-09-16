@@ -1,19 +1,131 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111111"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-title" content="Varsity QB Scorer">
-<link rel="apple-touch-icon" href="icon-180.png"><link rel="manifest" href="manifest.json"><title>Varsity QB Scorer</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Varsity QB Scorer</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f4f6;color:#171717;padding-bottom:96px}header{background:#111;color:#fff;padding:18px 14px 16px}h1{margin:0 0 14px;font-size:27px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{width:100%;padding:15px;border:2px solid #bbb;border-radius:14px;background:#fff;font-size:18px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.stat{background:#292929;border-radius:13px;text-align:center;padding:10px 4px}.stat b{display:block;font-size:28px}.stat span{font-size:11px;color:#ddd}main{padding:14px}.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 8px #0001}.section{font-weight:900;color:#555;letter-spacing:1px;font-size:18px;margin:2px 3px 10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{display:block;font-size:13px;font-weight:800;color:#666;margin:4px 0 6px}select,input{font:inherit}.next{background:#eaf5ff;border-radius:13px;padding:13px;margin:0 0 13px;text-align:center;font-weight:900;font-size:20px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button,.bottom button{border:0;border-radius:16px;padding:20px 8px;background:#fff;box-shadow:0 2px 7px #0002;color:#087ee5;font-size:18px;font-weight:900}.quick .green{background:#dff5db}.quick .red{background:#ffe0e0}.recent{background:#fff;border-radius:16px;padding:13px;box-shadow:0 2px 7px #0001}.recent hr{border:0;border-top:1px solid #ddd}.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ccc;padding:9px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;z-index:20}.bottom button{background:#111;color:#fff;font-size:13px;padding:15px 6px}.modal{position:fixed;inset:0;background:#0009;z-index:50;display:flex;align-items:flex-end}.modal.hidden{display:none}.sheet{background:#fff;width:100%;max-height:88vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px}.sheet h2{margin:0 0 8px}.context{background:#eef7ff;border-radius:12px;padding:11px;font-weight:800;margin-bottom:14px}.yard{width:100%;font-size:28px;padding:16px;border:2px solid #aaa;border-radius:14px}.checkrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.check{display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:12px;border-radius:12px;font-weight:800}.check input{width:24px;height:24px}.saveplay{width:100%;border:0;border-radius:15px;background:#111;color:#fff;padding:18px;font-size:19px;font-weight:900;margin-top:8px}.cancel{width:100%;border:0;border-radius:15px;background:#eee;color:#222;padding:15px;font-size:17px;font-weight:800;margin-top:9px}.note{width:100%;padding:13px;border:2px solid #bbb;border-radius:13px;font-size:17px}.small{color:#666;font-size:13px}.danger{color:#a00;font-weight:800}
-</style></head><body>
-<header><h1>🏈 Varsity QB Scorer</h1><div class="grid2"><input class="field" id="qb" placeholder="QB name"><input class="field" id="opp" placeholder="Opponent"><input class="field" id="team" placeholder="Team"><input class="field" id="score" placeholder="Score"></div><div class="stats"><div class="stat"><b id="comp">0</b><span>COMP</span></div><div class="stat"><b id="att">0</b><span>ATT</span></div><div class="stat"><b id="pct">0%</b><span>CMP %</span></div><div class="stat"><b id="passYds">0</b><span>PASS YDS</span></div><div class="stat"><b id="passTD">0</b><span>PASS TD</span></div><div class="stat"><b id="ints">0</b><span>INT</span></div><div class="stat"><b id="rushAtt">0</b><span>RUSH ATT</span></div><div class="stat"><b id="rushYds">0</b><span>RUSH YDS</span></div></div></header>
+*{box-sizing:border-box}body{margin:0;background:#f1f2f4;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:100px}
+header{background:#111;color:#fff;padding:34px 28px 28px}
+h1{font-size:34px;margin:0 0 24px;font-weight:800}h2{font-size:25px;letter-spacing:1.5px;color:#555;margin:28px 8px 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid input,.gamegrid input,.gamegrid select{width:100%;min-height:70px;border:2px solid #ccc;border-radius:18px;padding:0 28px;font-size:22px;background:#fff;color:#111}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}.stat{background:#292929;border-radius:18px;min-height:108px;display:flex;flex-direction:column;align-items:center;justify-content:center}.stat b{font-size:48px;line-height:1}.stat span{font-size:17px;margin-top:10px;color:#ddd}
+main{max-width:900px;margin:auto;padding:18px 28px}.card{background:#fff;border-radius:22px;padding:20px 24px;box-shadow:0 2px 9px #d9d9d9}.gamegrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field label{display:block;font-weight:700;font-size:17px;color:#666;margin:0 0 7px}.field input,.field select{min-height:62px;border:2px solid #c8c8c8;border-radius:18px;padding:0 22px;font-size:20px}
+.next{margin:18px 0;background:#eaf4ff;border-radius:18px;padding:20px;text-align:center;font-size:25px;font-weight:800}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:18px}.btn{border:0;border-radius:20px;min-height:90px;background:#fff;box-shadow:0 4px 10px #d8d8d8;font-size:24px;font-weight:800;color:#2878d5}.btn:active{transform:scale(.98)}.good{background:#e3f6df}.danger{background:#ffe1e1}.dark{background:#111;color:#fff}.wide{grid-column:1/-1}
+.hidden{display:none!important}
+.yardbox{background:#fff;border-radius:20px;padding:18px;margin-top:18px;box-shadow:0 2px 8px #ddd}.yardbox h3{margin:0 0 12px;font-size:22px}.yardrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.yardrow input{min-height:70px;border:2px solid #bbb;border-radius:16px;padding:0 18px;font-size:25px}.yardrow button{min-height:70px}
+.helper{color:#666;font-size:17px;margin:10px 4px 0}.recent{background:#fff;border-radius:20px;padding:4px 20px}.playrow{padding:18px 0;border-bottom:1px solid #ddd;font-size:20px}.playrow:last-child{border-bottom:0}.playrow b{font-size:21px}
+.bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ccc;padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.bottom button{border:0;border-radius:18px;background:#111;color:#fff;min-height:64px;font-size:17px;font-weight:800}
+dialog{border:0;border-radius:22px;width:min(92vw,560px);padding:22px;box-shadow:0 10px 60px #777}dialog::backdrop{background:#0008}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.modal-actions button{min-height:58px;border:0;border-radius:14px;font-weight:800;font-size:18px}
+.summaryline{font-size:19px;line-height:1.65}
+@media(max-width:620px){header{padding:30px 28px 22px}h1{font-size:32px}.stats{gap:12px}.stat{min-height:98px}.stat b{font-size:40px}.stat span{font-size:15px}main{padding:14px 28px}.btn{min-height:84px;font-size:21px}.bottom button{font-size:15px}.bottom{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏈 Varsity QB Scorer</h1>
+  <div class="grid">
+    <input id="qb" placeholder="QB name">
+    <input id="opp" placeholder="Opponent">
+    <input id="team" placeholder="Team">
+    <input id="score" placeholder="Score (optional)">
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="comp">0</b><span>COMP</span></div>
+    <div class="stat"><b id="att">0</b><span>ATT</span></div>
+    <div class="stat"><b id="pct">0%</b><span>CMP %</span></div>
+    <div class="stat"><b id="passyds">0</b><span>PASS YDS</span></div>
+    <div class="stat"><b id="ptd">0</b><span>PASS TD</span></div>
+    <div class="stat"><b id="int">0</b><span>INT</span></div>
+    <div class="stat"><b id="rushatt">0</b><span>RUSH ATT</span></div>
+    <div class="stat"><b id="rushyds">0</b><span>RUSH YDS</span></div>
+  </div>
+</header>
+
 <main>
-<div class="card"><div class="section">CURRENT SITUATION</div><div class="row"><div><label>Quarter</label><select class="field" id="quarter"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>OT</option></select></div><div><label>Drive #</label><input class="field" id="drive" type="number" min="1" value="1"></div><div><label>Down</label><select class="field" id="down"><option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option><option value="4">4th</option></select></div><div><label>Distance to 1st</label><input class="field" id="distance" type="number" min="1" value="10"></div></div><div class="small" style="margin-top:8px">Tap a play. A yard-entry screen will appear, then tap SAVE PLAY.</div></div>
-<div class="next" id="next">Next: 1st & 10</div>
-<div class="section">PASSING</div><div class="quick"><button class="green" data-play="COMPLETE">✓ COMPLETE</button><button data-play="INCOMPLETE">INCOMPLETE</button><button class="red" data-play="INT">⚠ INTERCEPTION</button><button data-play="SPIKE">SPIKE</button></div>
-<div class="section" style="margin-top:14px">RUSHING / NEGATIVE PLAYS</div><div class="quick"><button class="green" data-play="QB RUN">QB RUN</button><button data-play="SCRAMBLE">SCRAMBLE</button><button data-play="SACK">SACK</button><button class="red" data-play="FUMBLE">FUMBLE</button></div>
-<div class="section" style="margin-top:14px">RECENT PLAYS</div><div class="small" style="margin:0 3px 8px">Made a mistake? Tap ↩ UNDO to remove the last saved play and restore the previous down & distance.</div><div class="recent" id="recent">No plays yet.</div>
+  <div class="card">
+    <h2 style="margin-top:0">GAME / DRIVE</h2>
+    <div class="gamegrid">
+      <div class="field"><label>Quarter</label><select id="quarter"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option></select></div>
+      <div class="field"><label>Drive #</label><input id="drive" type="number" min="1" value="1"></div>
+      <div class="field"><label>Down</label><select id="down"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option></select></div>
+      <div class="field"><label>Distance to 1st</label><input id="distance" type="number" step="0.5" value="10"></div>
+    </div>
+    <div class="helper">After a play is saved, down & distance advance using the play result. You can always edit them before the next play.</div>
+  </div>
+
+  <div class="next" id="next">Next: 1st & 10</div>
+
+  <h2>PASSING</h2>
+  <div class="buttons">
+    <button class="btn good" onclick="startPass('Complete')">✓ COMPLETE</button>
+    <button class="btn" onclick="startPass('Incomplete')">INCOMPLETE</button>
+    <button class="btn danger" onclick="recordInstant('Interception')">⚠ INTERCEPTION</button>
+    <button class="btn" onclick="recordInstant('Spike')">SPIKE</button>
+  </div>
+
+  <div id="passBox" class="yardbox hidden">
+    <h3 id="passPrompt">Passing yards</h3>
+    <div class="yardrow">
+      <input id="passYds" type="number" step="0.5" inputmode="decimal" placeholder="Yards (negative allowed)">
+      <button class="btn good" onclick="savePass()">SAVE PLAY</button>
+    </div>
+    <div class="helper">Use a negative number for a completion that loses yards, e.g. -3.</div>
+  </div>
+
+  <h2>RUSHING / NEGATIVE PLAYS</h2>
+  <div class="buttons">
+    <button class="btn good" onclick="startRush('QB Run')">QB RUN</button>
+    <button class="btn" onclick="startRush('Scramble')">SCRAMBLE</button>
+    <button class="btn" onclick="startRush('Rush for Loss')">RUSH FOR LOSS</button>
+    <button class="btn" onclick="startRush('Sack')">SACK</button>
+    <button class="btn danger" onclick="startRush('Fumble')">FUMBLE</button>
+    <button class="btn wide" onclick="openNote()">NOTE / RECEIVER</button>
+  </div>
+
+  <div id="rushBox" class="yardbox hidden">
+    <h3 id="rushPrompt">Rushing yards</h3>
+    <div class="yardrow">
+      <input id="rushYds" type="number" step="0.5" inputmode="decimal" placeholder="Yards (negative allowed)">
+      <button class="btn good" onclick="saveRush()">SAVE PLAY</button>
+    </div>
+    <div class="helper">For sacks, rushes for loss, or fumble plays, enter negative yards such as -5.</div>
+  </div>
+
+  <h2>RECENT PLAYS</h2>
+  <div class="recent" id="recent"></div>
+  <div class="helper">Made a mistake? Use ↩ UNDO to remove the last saved play and restore the previous down & distance.</div>
 </main>
-<div class="bottom"><button id="undoBtn">↩ UNDO</button><button id="summaryBtn">SUMMARY</button><button id="csvBtn">EXPORT CSV</button><button id="newBtn">NEW GAME</button></div>
-<div class="modal hidden" id="modal"><div class="sheet"><h2 id="modalTitle">Enter Play</h2><div class="context" id="context"></div><label for="yards">Yards gained / lost</label><input class="yard" id="yards" type="number" inputmode="numeric" placeholder="0"><div id="receiverWrap"><label for="receiver">Receiver (optional)</label><input class="note" id="receiver" placeholder="Name / #"></div><div class="checkrow" id="checks"><label class="check"><input id="td" type="checkbox"> Touchdown</label><label class="check"><input id="fd" type="checkbox"> First Down</label></div><label for="playNote">Note</label><input class="note" id="playNote" placeholder="Optional"><button class="saveplay" id="savePlay">SAVE PLAY</button><button class="cancel" id="cancelPlay">CANCEL</button></div></div>
-<script src="app.js?v=5"></script></body></html>
+
+<div class="bottom">
+  <button onclick="undo()">↩ UNDO</button>
+  <button onclick="openSummary()">SUMMARY</button>
+  <button onclick="exportCSV()">EXPORT</button>
+  <button onclick="newGame()">NEW GAME</button>
+</div>
+
+<dialog id="noteDialog">
+  <h2 style="margin-top:0">Note / Receiver</h2>
+  <input id="noteText" style="width:100%;min-height:60px;border:2px solid #bbb;border-radius:14px;padding:12px;font-size:19px" placeholder="Receiver, play note, etc.">
+  <div class="modal-actions">
+    <button onclick="noteDialog.close()">CANCEL</button>
+    <button class="good" onclick="saveNote()">SAVE NOTE</button>
+  </div>
+</dialog>
+
+<dialog id="summaryDialog">
+  <h2 style="margin-top:0">Game Summary</h2>
+  <div id="summary" class="summaryline"></div>
+  <div class="modal-actions">
+    <button onclick="summaryDialog.close()">CLOSE</button>
+    <button class="good" onclick="exportCSV()">EXPORT CSV</button>
+  </div>
+</dialog>
+
+<script src="app.js?v=3"></script>
+</body>
+</html>
