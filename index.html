@@ -1,166 +1,30 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="QB Scorer">
-<title>Varsity QB Scorer</title>
-<style>
-*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f5f7;color:#111}
-header{position:sticky;top:0;z-index:5;background:#111;color:#fff;padding:12px 14px calc(12px + env(safe-area-inset-top));}
-h1{font-size:20px;margin:0 0 8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-input,select{width:100%;font-size:16px;padding:10px;border-radius:8px;border:1px solid #aaa;background:white}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}.stat{background:#292929;border-radius:8px;padding:7px 3px;text-align:center}.stat b{display:block;font-size:20px}.stat span{font-size:10px;color:#ddd}
-main{padding:10px 10px 110px}.section{margin:8px 0}.section h2{font-size:13px;margin:8px 2px;color:#555;text-transform:uppercase;letter-spacing:.06em}
-.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.btn{border:0;border-radius:12px;min-height:60px;font-size:17px;font-weight:700;background:white;box-shadow:0 1px 3px #bbb}.btn:active{transform:scale(.98)}.primary{background:#dff0ff}.danger{background:#ffe1e1}.good{background:#e2f4df}
-.hidden{display:none}.yardrow{display:grid;grid-template-columns:1fr 1fr;gap:9px}.yardrow input{min-height:56px;text-align:center;font-size:21px;font-weight:700}
-.last{background:white;border-radius:12px;padding:10px;margin-top:10px;min-height:45px}.last b{font-size:15px}.muted{color:#666;font-size:12px}
-table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;font-size:12px}th,td{padding:7px 4px;border-bottom:1px solid #ddd;text-align:center}th{background:#e8ebef}
-.bottom{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ccc;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:grid;grid-template-columns:repeat(3,1fr);gap:7px;z-index:6}.bottom button{padding:12px 4px;border:0;border-radius:9px;background:#111;color:white;font-weight:700}
-dialog{border:0;border-radius:16px;width:min(92vw,520px);padding:18px;box-shadow:0 10px 50px #555}.modalgrid{display:grid;gap:9px}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-@media(min-width:700px){main{max-width:700px;margin:auto}.buttons{grid-template-columns:repeat(4,1fr)}}
-</style>
-
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<meta name="theme-color" content="#111111">
-
-</head>
-<body>
-<header>
-<h1>🏈 Varsity QB Scorer</h1>
-<div class="grid">
-<input id="qb" placeholder="QB name">
-<input id="opp" placeholder="Opponent">
-<input id="team" placeholder="Team">
-<input id="date" type="date">
-</div>
-<div class="stats">
-<div class="stat"><b id="comp">0</b><span>COMP</span></div><div class="stat"><b id="att">0</b><span>ATT</span></div>
-<div class="stat"><b id="pct">0%</b><span>CMP %</span></div><div class="stat"><b id="passyds">0</b><span>PASS YDS</span></div>
-<div class="stat"><b id="ptd">0</b><span>PASS TD</span></div><div class="stat"><b id="int">0</b><span>INT</span></div>
-<div class="stat"><b id="rushatt">0</b><span>RUSH ATT</span></div><div class="stat"><b id="rushyds">0</b><span>RUSH YDS</span></div>
-</div>
-</header>
-
-<main>
-<div class="section"><h2>1. Quarter</h2><div class="buttons">
-<button class="btn primary" onclick="setQ(1)">1st</button><button class="btn primary" onclick="setQ(2)">2nd</button><button class="btn primary" onclick="setQ(3)">3rd</button><button class="btn primary" onclick="setQ(4)">4th</button>
-</div></div>
-
-<div class="section"><h2>2. Pass</h2><div class="buttons">
-<button class="btn good" onclick="pass('Complete')">✓ COMPLETE</button>
-<button class="btn" onclick="pass('Incomplete')">INCOMPLETE</button>
-<button class="btn danger" onclick="pass('Intercepted')">⚠ INT</button>
-<button class="btn" onclick="record('Spike',0)">SPIKE</button>
-</div></div>
-
-<div id="yards" class="section hidden">
-<h2>Passing yards</h2>
-<div class="yardrow"><input id="passYds" type="number" inputmode="numeric" min="0" placeholder="Pass yards"><button class="btn good" onclick="finishPass()">SAVE PASS</button></div>
-</div>
-
-<div class="section"><h2>3. Run</h2><div class="buttons">
-<button class="btn good" onclick="showRun(false)">QB RUN</button>
-<button class="btn primary" onclick="showRun(true)">SCRAMBLE</button>
-<button class="btn" onclick="record('Sack',0)">SACK</button>
-</div></div>
-
-<div id="runbox" class="section hidden">
-<h2>Rushing yards</h2>
-<div class="yardrow"><input id="rushYds" type="number" inputmode="numeric" placeholder="Rush yards"><button class="btn good" onclick="finishRun()">SAVE RUN</button></div>
-</div>
-
-<div class="section"><h2>4. Scoring / notes</h2><div class="buttons">
-<button class="btn good" onclick="markTD()">🏈 TD</button>
-<button class="btn" onclick="addFirstDown()">FIRST DOWN</button>
-<button class="btn" onclick="openNote()">NOTE</button>
-<button class="btn danger" onclick="undo()">↩ UNDO</button>
-</div></div>
-
-<div class="last"><b>Last play:</b> <span id="last">—</span><div class="muted">Tap the appropriate result. For passes/runs, enter yards when prompted.</div></div>
-
-<div class="section"><h2>Recent plays</h2><table><thead><tr><th>#</th><th>Q</th><th>Play</th><th>Yds</th><th>TD</th><th>INT</th></tr></thead><tbody id="log"></tbody></table></div>
-</main>
-
-<div class="bottom">
-<button onclick="openSummary()">SUMMARY</button><button onclick="exportCSV()">EXPORT CSV</button><button onclick="newGame()">NEW GAME</button>
-</div>
-
-<dialog id="noteDialog">
-<h3>Add note / receiver</h3><div class="modalgrid"><input id="noteText" placeholder="Receiver, play note, etc."></div>
-<div class="modal-actions"><button class="btn" onclick="noteDialog.close()">CANCEL</button><button class="btn good" onclick="saveNote()">SAVE NOTE</button></div>
-</dialog>
-
-<dialog id="summaryDialog">
-<h2>Game Summary</h2><div id="summary"></div><div class="modal-actions"><button class="btn" onclick="summaryDialog.close()">CLOSE</button><button class="btn good" onclick="exportCSV()">EXPORT</button></div>
-</dialog>
-
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111"><link rel="manifest" href="manifest.json"><title>Varsity QB Scorer</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f4f6;color:#171717;padding-bottom:90px}header{background:#111;color:#fff;padding:14px;position:sticky;top:0;z-index:5}h1{margin:0 0 12px;font-size:25px}.g{display:grid;grid-template-columns:1fr 1fr;gap:9px}.f,input,select{width:100%;padding:13px;border:1px solid #bbb;border-radius:11px;background:#fff;font-size:17px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}.st{background:#292929;border-radius:11px;text-align:center;padding:8px}.st b{display:block;font-size:25px}.st span{font-size:10px;color:#ddd}main{padding:14px}.sec{font-weight:800;color:#555;letter-spacing:1px;margin:12px 3px 7px}.card{background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;box-shadow:0 1px 5px #0001}.q,.p,.r,.a{display:grid;grid-template-columns:1fr 1fr;gap:9px}button{border:0;border-radius:14px;padding:17px 8px;background:#fff;box-shadow:0 2px 5px #0002;color:#087ee5;font-size:17px;font-weight:800}.green{background:#dff5db}.red{background:#ffe0e0}.a{grid-template-columns:1fr 1fr 1fr}.a button{background:#111;color:#fff;font-size:14px;padding:13px}.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ccc;padding:8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;z-index:9}.bottom button{background:#111;color:#fff;font-size:13px;padding:14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}label{display:block;font-size:11px;font-weight:700;color:#666;margin:5px 0}.modal{position:fixed;inset:0;background:#0008;z-index:20;display:flex;align-items:flex-end}.box{background:#fff;width:100%;max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px}.close{float:right;background:#eee;color:#222;padding:8px 12px;font-size:14px}.hide{display:none}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px;border-bottom:1px solid #ddd;text-align:center}
+</style></head><body><header><h1>🏈 Varsity QB Scorer</h1><div class="g"><input id="qb" class="f" placeholder="QB name"><input id="opp" class="f" placeholder="Opponent"><input id="team" class="f" placeholder="Team"><input id="score" class="f" placeholder="Score"></div><div class="stats">
+<div class="st"><b id="c">0</b><span>COMP</span></div><div class="st"><b id="a">0</b><span>ATT</span></div><div class="st"><b id="p">0%</b><span>CMP %</span></div><div class="st"><b id="y">0</b><span>PASS YDS</span></div><div class="st"><b id="tdp">0</b><span>PASS TD</span></div><div class="st"><b id="i">0</b><span>INT</span></div><div class="st"><b id="ra">0</b><span>RUSH ATT</span></div><div class="st"><b id="ry">0</b><span>RUSH YDS</span></div></div></header>
+<main><div class="card"><div class="sec">GAME / DRIVE</div><div class="row"><div><label>Quarter</label><select id="q"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>OT</option></select></div><div><label>Drive #</label><input id="drive" type="number" value="1"></div><div><label>Down</label><select id="down"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option></select></div><div><label>Distance</label><input id="dist" placeholder="10"></div></div></div>
+<div class="sec">PASSING</div><div class="p"><button class="green" onclick="play('COMPLETE')">✓ COMPLETE</button><button onclick="play('INCOMPLETE')">INCOMPLETE</button><button class="red" onclick="play('INT')">⚠ INT</button><button onclick="play('SPIKE')">SPIKE</button></div>
+<div class="sec">RUSHING / NEGATIVE PLAYS</div><div class="r"><button class="green" onclick="play('QB RUN')">QB RUN</button><button onclick="play('SCRAMBLE')">SCRAMBLE</button><button onclick="play('SACK')">SACK</button><button class="red" onclick="play('FUMBLE')">FUMBLE</button></div>
+<div class="sec">RESULT DETAILS</div><div class="card"><div class="row"><div><label>Yards</label><input id="yd" type="number" inputmode="numeric" value="0"></div><div><label>Receiver</label><input id="rec" placeholder="Name / #"></div><div><label>TD?</label><select id="td"><option value="0">No</option><option value="1">Yes</option></select></div><div><label>First Down?</label><select id="fd"><option value="0">No</option><option value="1">Yes</option></select></div><div class="full"><label>Note</label><input id="note" placeholder="Optional"></div></div></div>
+<div class="a"><button onclick="note()">NOTE</button><button onclick="undo()">↩ UNDO</button><button onclick="summary()">SUMMARY</button></div>
+<div class="sec">RECENT PLAYS</div><div class="card" id="recent">No plays yet.</div></main>
+<div class="bottom"><button onclick="summary()">SUMMARY</button><button onclick="csv()">EXPORT CSV</button><button onclick="newGame()">NEW GAME</button></div>
+<div id="m" class="modal hide"><div class="box"><button class="close" onclick="closeM()">Close</button><h2>Game Summary</h2><div id="mb"></div></div></div>
 <script>
-let plays=JSON.parse(localStorage.getItem('qbPlays')||'[]');
-let q=Number(localStorage.getItem('qbQ')||1), pending=null, pendingRun=false;
-const $=id=>document.getElementById(id);
-$('date').value=new Date().toISOString().slice(0,10);
-['qb','opp','team','date'].forEach(id=>$(id).addEventListener('input',save));
-
-function save(){localStorage.setItem('qbMeta',JSON.stringify({qb:$('qb').value,opp:$('opp').value,team:$('team').value,date:$('date').value}));localStorage.setItem('qbPlays',JSON.stringify(plays));localStorage.setItem('qbQ',q)}
-function load(){let m=JSON.parse(localStorage.getItem('qbMeta')||'{}');['qb','opp','team','date'].forEach(id=>{if(m[id])$(id).value=m[id]});render()}
-load();
-
-function setQ(n){q=n;save();$('last').textContent='Quarter set to '+n}
-function record(type,yds=0,extra={}){plays.push({n:plays.length+1,q,play:type,yds:Number(yds)||0,td:false,int:false,note:extra.note||'',first:false});save();render()}
-function pass(result){
- if(result==='Intercepted'){plays.push({n:plays.length+1,q,play:'Pass',result,yds:0,td:false,int:true,note:'',first:false});save();render();return}
- pending={result};$('passYds').value='';$('yards').classList.remove('hidden');$('passYds').focus()
-}
-function finishPass(){if(!pending)return;let y=Number($('passYds').value)||0;plays.push({n:plays.length+1,q,play:'Pass',result:pending.result,yds:y,td:false,int:false,note:'',first:false});pending=null;$('yards').classList.add('hidden');save();render()}
-function showRun(scramble){pendingRun=scramble;$('rushYds').value='';$('runbox').classList.remove('hidden');$('rushYds').focus()}
-function finishRun(){let y=Number($('rushYds').value)||0;plays.push({n:plays.length+1,q,play:pendingRun?'Scramble':'Rush',result:'',yds:y,td:false,int:false,note:'',first:false});$('runbox').classList.add('hidden');save();render()}
-function markTD(){if(!plays.length){$('last').textContent='Enter a play first.';return}plays[plays.length-1].td=true;save();render()}
-function addFirstDown(){if(!plays.length)return;plays[plays.length-1].first=true;save();render()}
-function openNote(){$('noteText').value='';noteDialog.showModal();$('noteText').focus()}
-function saveNote(){let t=$('noteText').value.trim();if(t)plays.push({n:plays.length+1,q,play:'Note',result:'',yds:0,td:false,int:false,note:t,first:false});noteDialog.close();save();render()}
-function undo(){if(plays.length){plays.pop();save();render()}}
-function render(){
- let passplays=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play));
- let comp=plays.filter(p=>p.play==='Pass'&&p.result==='Complete').length;
- let att=passplays.length; let py=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0);
- let ptd=plays.filter(p=>p.td&&['Pass','Scramble'].includes(p.play)).length;
- let ints=plays.filter(p=>p.int).length;
- let ra=plays.filter(p=>['Rush','Scramble'].includes(p.play)).length;
- let ry=plays.filter(p=>['Rush','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0);
- $('comp').textContent=comp;$('att').textContent=att;$('pct').textContent=(att?Math.round(comp/att*100):0)+'%';$('passyds').textContent=py;
- $('ptd').textContent=ptd;$('int').textContent=ints;$('rushatt').textContent=ra;$('rushyds').textContent=ry;
- $('last').textContent=plays.length?fmt(plays[plays.length-1]):'—';
- $('log').innerHTML=plays.slice(-12).reverse().map(p=>`<tr><td>${p.n}</td><td>${p.q}</td><td>${p.play}${p.result?' / '+p.result:''}</td><td>${p.yds}</td><td>${p.td?'✓':''}</td><td>${p.int?'✓':''}</td></tr>`).join('');
-}
-function fmt(p){return `${p.play}${p.result?' — '+p.result:''} ${p.yds?`(${p.yds} yds)`:''}${p.td?' — TD':''}${p.int?' — INT':''}${p.first?' — 1st Down':''}${p.note?' — '+p.note:''}`}
-function openSummary(){
- let comp=plays.filter(p=>p.play==='Pass'&&p.result==='Complete').length, att=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play)).length;
- let py=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0), ptd=plays.filter(p=>p.td&&['Pass','Scramble'].includes(p.play)).length;
- let ints=plays.filter(p=>p.int).length,ra=plays.filter(p=>['Rush','Scramble'].includes(p.play)).length,ry=plays.filter(p=>['Rush','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0),rtd=plays.filter(p=>p.td&&['Rush','Scramble'].includes(p.play)).length;
- $('summary').innerHTML=`<p><b>${$('qb').value||'QB'}</b> vs. <b>${$('opp').value||'Opponent'}</b></p>
- <p>Passing: <b>${comp}/${att}</b> (${att?Math.round(comp/att*100):0}%) for <b>${py}</b> yds, <b>${ptd}</b> TD, <b>${ints}</b> INT</p>
- <p>Rushing: <b>${ra}</b> att for <b>${ry}</b> yds, <b>${rtd}</b> TD</p>
- <p>Plays logged: <b>${plays.length}</b></p>`;
- summaryDialog.showModal()
-}
-function exportCSV(){
- let rows=[['Play #','Quarter','Play','Result','Yards','TD','INT','First Down','Note']];
- plays.forEach(p=>rows.push([p.n,p.q,p.play,p.result||'',p.yds,p.td?'Yes':'No',p.int?'Yes':'No',p.first?'Yes':'No',p.note||'']));
- let csv=rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\n');
- let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`QB_${$('opp').value||'Game'}_${$('date').value||''}.csv`;a.click();URL.revokeObjectURL(a.href)
-}
-function newGame(){if(confirm('Start a new game? Current game will be cleared. Export first if you want to keep it.')){plays=[];q=1;save();render()}}
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
-}
-</script>
-
-</body>
-</html>
+const K='QBSCORER_V2';let G=JSON.parse(localStorage.getItem(K)||'null')||{meta:{},plays:[],hist:[]};
+const $=id=>document.getElementById(id), V=id=>$(id).value;
+function save(){localStorage.setItem(K,JSON.stringify(G));render()}
+['qb','opp','team','score'].forEach(id=>$(id).oninput=()=>{G.meta[id]=V(id);save()});
+function ctx(){return{q:V('q'),drive:V('drive')||1,down:V('down'),dist:V('dist'),yards:+V('yd')||0,rec:V('rec').trim(),td:V('td')==='1',fd:V('fd')==='1',note:V('note').trim()}}
+function play(t){let x=ctx();if(t==='INT'||t==='SPIKE'){x.yards=0;x.td=false;x.fd=false;x.rec=''}G.hist.push(JSON.stringify(G.plays));G.plays.push({t,...x});clear();save()}
+function note(){let x=ctx();x.yards=0;G.hist.push(JSON.stringify(G.plays));G.plays.push({t:'NOTE',...x});clear();save()}
+function clear(){['yd','rec','note'].forEach(x=>$(x).value='');$('td').value='0';$('fd').value='0'}
+function undo(){if(G.hist.length){G.plays=JSON.parse(G.hist.pop());save()}}
+function stats(){let s={c:0,a:0,y:0,tdp:0,i:0,ra:0,ry:0};G.plays.forEach(x=>{if(['COMPLETE','INCOMPLETE','INT','SPIKE'].includes(x.t))s.a++;if(x.t==='COMPLETE'){s.c++;s.y+=x.yards;if(x.td)s.tdp++}if(x.t==='INT')s.i++;if(['QB RUN','SCRAMBLE'].includes(x.t)){s.ra++;s.ry+=x.yards}if(x.t==='SACK')s.ry+=x.yards});return s}
+function render(){let s=stats();Object.entries(s).forEach(([k,v])=>$(k).textContent=v);$('p').textContent=(s.a?Math.round(s.c/s.a*100):0)+'%';$('recent').innerHTML=G.plays.slice(-10).reverse().map((x,n)=>`${G.plays.length-n}. ${x.q} • ${x.down}&${x.dist||'—'} • <b>${x.t}</b> ${x.yards?x.yards+' yds':''}${x.rec?' • '+x.rec:''}${x.td?' • TD':''}${x.fd?' • 1D':''}${x.note?' • '+x.note:''}`).join('<hr>')||'No plays yet.'}
+function summary(){let s=stats(),qs={};G.plays.forEach(x=>(qs[x.q]??=[]).push(x));let rows=Object.entries(qs).map(([q,a])=>{let pa=a.filter(x=>['COMPLETE','INCOMPLETE','INT','SPIKE'].includes(x.t)),c=a.filter(x=>x.t==='COMPLETE'),r=a.filter(x=>['QB RUN','SCRAMBLE'].includes(x.t));return`<tr><td>${q}</td><td>${c.length}/${pa.length}</td><td>${c.reduce((z,x)=>z+x.yards,0)}</td><td>${r.reduce((z,x)=>z+x.yards,0)}</td><td>${a.filter(x=>x.td).length}</td></tr>`}).join('');$('mb').innerHTML=`<p><b>${G.meta.qb||'QB'}</b> vs <b>${G.meta.opp||'Opponent'}</b></p><p>${s.c}/${s.a} passing • ${s.pct||Math.round((s.c/(s.a||1))*100)}% • ${s.y} pass yds • ${s.tdp} pass TD • ${s.i} INT<br>${s.ra} rush • ${s.ry} rush yds</p><h3>Quarter Breakdown</h3><table><tr><th>Qtr</th><th>C/A</th><th>Pass Yds</th><th>Rush Yds</th><th>TD</th></tr>${rows||'<tr><td colspan="5">No plays</td></tr>'}</table>`;$('m').classList.remove('hide')}
+function closeM(){$('m').classList.add('hide')}
+function csv(){let r=[['Quarter','Drive','Down','Distance','Play','Yards','TD','First Down','Receiver','Note']].concat(G.plays.map(x=>[x.q,x.drive,x.down,x.dist,x.t,x.yards,x.td?'Yes':'No',x.fd?'Yes':'No',x.rec,x.note]));let z=r.map(a=>a.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([z],{type:'text/csv'}));a.download='QB_game_stats.csv';a.click()}
+function newGame(){if(confirm('Start a new game? Current game will be cleared from this screen. Export CSV first if you want a file copy.')){G={meta:{},plays:[],hist:[]};save();['qb','opp','team','score'].forEach(id=>$(id).value='')}}
+['qb','opp','team','score'].forEach(id=>$(id).value=G.meta[id]||'');render();if('serviceWorker'in navigator)navigator.serviceWorker.register('service-worker.js');
+</script></body></html>
