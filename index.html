@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QB Scorer">
+<title>Varsity QB Scorer</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f5f7;color:#111}
+header{position:sticky;top:0;z-index:5;background:#111;color:#fff;padding:12px 14px calc(12px + env(safe-area-inset-top));}
+h1{font-size:20px;margin:0 0 8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+input,select{width:100%;font-size:16px;padding:10px;border-radius:8px;border:1px solid #aaa;background:white}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}.stat{background:#292929;border-radius:8px;padding:7px 3px;text-align:center}.stat b{display:block;font-size:20px}.stat span{font-size:10px;color:#ddd}
+main{padding:10px 10px 110px}.section{margin:8px 0}.section h2{font-size:13px;margin:8px 2px;color:#555;text-transform:uppercase;letter-spacing:.06em}
+.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.btn{border:0;border-radius:12px;min-height:60px;font-size:17px;font-weight:700;background:white;box-shadow:0 1px 3px #bbb}.btn:active{transform:scale(.98)}.primary{background:#dff0ff}.danger{background:#ffe1e1}.good{background:#e2f4df}
+.hidden{display:none}.yardrow{display:grid;grid-template-columns:1fr 1fr;gap:9px}.yardrow input{min-height:56px;text-align:center;font-size:21px;font-weight:700}
+.last{background:white;border-radius:12px;padding:10px;margin-top:10px;min-height:45px}.last b{font-size:15px}.muted{color:#666;font-size:12px}
+table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;font-size:12px}th,td{padding:7px 4px;border-bottom:1px solid #ddd;text-align:center}th{background:#e8ebef}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ccc;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:grid;grid-template-columns:repeat(3,1fr);gap:7px;z-index:6}.bottom button{padding:12px 4px;border:0;border-radius:9px;background:#111;color:white;font-weight:700}
+dialog{border:0;border-radius:16px;width:min(92vw,520px);padding:18px;box-shadow:0 10px 50px #555}.modalgrid{display:grid;gap:9px}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+@media(min-width:700px){main{max-width:700px;margin:auto}.buttons{grid-template-columns:repeat(4,1fr)}}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#111111">
+
+</head>
+<body>
+<header>
+<h1>🏈 Varsity QB Scorer</h1>
+<div class="grid">
+<input id="qb" placeholder="QB name">
+<input id="opp" placeholder="Opponent">
+<input id="team" placeholder="Team">
+<input id="date" type="date">
+</div>
+<div class="stats">
+<div class="stat"><b id="comp">0</b><span>COMP</span></div><div class="stat"><b id="att">0</b><span>ATT</span></div>
+<div class="stat"><b id="pct">0%</b><span>CMP %</span></div><div class="stat"><b id="passyds">0</b><span>PASS YDS</span></div>
+<div class="stat"><b id="ptd">0</b><span>PASS TD</span></div><div class="stat"><b id="int">0</b><span>INT</span></div>
+<div class="stat"><b id="rushatt">0</b><span>RUSH ATT</span></div><div class="stat"><b id="rushyds">0</b><span>RUSH YDS</span></div>
+</div>
+</header>
+
+<main>
+<div class="section"><h2>1. Quarter</h2><div class="buttons">
+<button class="btn primary" onclick="setQ(1)">1st</button><button class="btn primary" onclick="setQ(2)">2nd</button><button class="btn primary" onclick="setQ(3)">3rd</button><button class="btn primary" onclick="setQ(4)">4th</button>
+</div></div>
+
+<div class="section"><h2>2. Pass</h2><div class="buttons">
+<button class="btn good" onclick="pass('Complete')">✓ COMPLETE</button>
+<button class="btn" onclick="pass('Incomplete')">INCOMPLETE</button>
+<button class="btn danger" onclick="pass('Intercepted')">⚠ INT</button>
+<button class="btn" onclick="record('Spike',0)">SPIKE</button>
+</div></div>
+
+<div id="yards" class="section hidden">
+<h2>Passing yards</h2>
+<div class="yardrow"><input id="passYds" type="number" inputmode="numeric" min="0" placeholder="Pass yards"><button class="btn good" onclick="finishPass()">SAVE PASS</button></div>
+</div>
+
+<div class="section"><h2>3. Run</h2><div class="buttons">
+<button class="btn good" onclick="showRun(false)">QB RUN</button>
+<button class="btn primary" onclick="showRun(true)">SCRAMBLE</button>
+<button class="btn" onclick="record('Sack',0)">SACK</button>
+</div></div>
+
+<div id="runbox" class="section hidden">
+<h2>Rushing yards</h2>
+<div class="yardrow"><input id="rushYds" type="number" inputmode="numeric" placeholder="Rush yards"><button class="btn good" onclick="finishRun()">SAVE RUN</button></div>
+</div>
+
+<div class="section"><h2>4. Scoring / notes</h2><div class="buttons">
+<button class="btn good" onclick="markTD()">🏈 TD</button>
+<button class="btn" onclick="addFirstDown()">FIRST DOWN</button>
+<button class="btn" onclick="openNote()">NOTE</button>
+<button class="btn danger" onclick="undo()">↩ UNDO</button>
+</div></div>
+
+<div class="last"><b>Last play:</b> <span id="last">—</span><div class="muted">Tap the appropriate result. For passes/runs, enter yards when prompted.</div></div>
+
+<div class="section"><h2>Recent plays</h2><table><thead><tr><th>#</th><th>Q</th><th>Play</th><th>Yds</th><th>TD</th><th>INT</th></tr></thead><tbody id="log"></tbody></table></div>
+</main>
+
+<div class="bottom">
+<button onclick="openSummary()">SUMMARY</button><button onclick="exportCSV()">EXPORT CSV</button><button onclick="newGame()">NEW GAME</button>
+</div>
+
+<dialog id="noteDialog">
+<h3>Add note / receiver</h3><div class="modalgrid"><input id="noteText" placeholder="Receiver, play note, etc."></div>
+<div class="modal-actions"><button class="btn" onclick="noteDialog.close()">CANCEL</button><button class="btn good" onclick="saveNote()">SAVE NOTE</button></div>
+</dialog>
+
+<dialog id="summaryDialog">
+<h2>Game Summary</h2><div id="summary"></div><div class="modal-actions"><button class="btn" onclick="summaryDialog.close()">CLOSE</button><button class="btn good" onclick="exportCSV()">EXPORT</button></div>
+</dialog>
+
+<script>
+let plays=JSON.parse(localStorage.getItem('qbPlays')||'[]');
+let q=Number(localStorage.getItem('qbQ')||1), pending=null, pendingRun=false;
+const $=id=>document.getElementById(id);
+$('date').value=new Date().toISOString().slice(0,10);
+['qb','opp','team','date'].forEach(id=>$(id).addEventListener('input',save));
+
+function save(){localStorage.setItem('qbMeta',JSON.stringify({qb:$('qb').value,opp:$('opp').value,team:$('team').value,date:$('date').value}));localStorage.setItem('qbPlays',JSON.stringify(plays));localStorage.setItem('qbQ',q)}
+function load(){let m=JSON.parse(localStorage.getItem('qbMeta')||'{}');['qb','opp','team','date'].forEach(id=>{if(m[id])$(id).value=m[id]});render()}
+load();
+
+function setQ(n){q=n;save();$('last').textContent='Quarter set to '+n}
+function record(type,yds=0,extra={}){plays.push({n:plays.length+1,q,play:type,yds:Number(yds)||0,td:false,int:false,note:extra.note||'',first:false});save();render()}
+function pass(result){
+ if(result==='Intercepted'){plays.push({n:plays.length+1,q,play:'Pass',result,yds:0,td:false,int:true,note:'',first:false});save();render();return}
+ pending={result};$('passYds').value='';$('yards').classList.remove('hidden');$('passYds').focus()
+}
+function finishPass(){if(!pending)return;let y=Number($('passYds').value)||0;plays.push({n:plays.length+1,q,play:'Pass',result:pending.result,yds:y,td:false,int:false,note:'',first:false});pending=null;$('yards').classList.add('hidden');save();render()}
+function showRun(scramble){pendingRun=scramble;$('rushYds').value='';$('runbox').classList.remove('hidden');$('rushYds').focus()}
+function finishRun(){let y=Number($('rushYds').value)||0;plays.push({n:plays.length+1,q,play:pendingRun?'Scramble':'Rush',result:'',yds:y,td:false,int:false,note:'',first:false});$('runbox').classList.add('hidden');save();render()}
+function markTD(){if(!plays.length){$('last').textContent='Enter a play first.';return}plays[plays.length-1].td=true;save();render()}
+function addFirstDown(){if(!plays.length)return;plays[plays.length-1].first=true;save();render()}
+function openNote(){$('noteText').value='';noteDialog.showModal();$('noteText').focus()}
+function saveNote(){let t=$('noteText').value.trim();if(t)plays.push({n:plays.length+1,q,play:'Note',result:'',yds:0,td:false,int:false,note:t,first:false});noteDialog.close();save();render()}
+function undo(){if(plays.length){plays.pop();save();render()}}
+function render(){
+ let passplays=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play));
+ let comp=plays.filter(p=>p.play==='Pass'&&p.result==='Complete').length;
+ let att=passplays.length; let py=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0);
+ let ptd=plays.filter(p=>p.td&&['Pass','Scramble'].includes(p.play)).length;
+ let ints=plays.filter(p=>p.int).length;
+ let ra=plays.filter(p=>['Rush','Scramble'].includes(p.play)).length;
+ let ry=plays.filter(p=>['Rush','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0);
+ $('comp').textContent=comp;$('att').textContent=att;$('pct').textContent=(att?Math.round(comp/att*100):0)+'%';$('passyds').textContent=py;
+ $('ptd').textContent=ptd;$('int').textContent=ints;$('rushatt').textContent=ra;$('rushyds').textContent=ry;
+ $('last').textContent=plays.length?fmt(plays[plays.length-1]):'—';
+ $('log').innerHTML=plays.slice(-12).reverse().map(p=>`<tr><td>${p.n}</td><td>${p.q}</td><td>${p.play}${p.result?' / '+p.result:''}</td><td>${p.yds}</td><td>${p.td?'✓':''}</td><td>${p.int?'✓':''}</td></tr>`).join('');
+}
+function fmt(p){return `${p.play}${p.result?' — '+p.result:''} ${p.yds?`(${p.yds} yds)`:''}${p.td?' — TD':''}${p.int?' — INT':''}${p.first?' — 1st Down':''}${p.note?' — '+p.note:''}`}
+function openSummary(){
+ let comp=plays.filter(p=>p.play==='Pass'&&p.result==='Complete').length, att=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play)).length;
+ let py=plays.filter(p=>['Pass','Spike','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0), ptd=plays.filter(p=>p.td&&['Pass','Scramble'].includes(p.play)).length;
+ let ints=plays.filter(p=>p.int).length,ra=plays.filter(p=>['Rush','Scramble'].includes(p.play)).length,ry=plays.filter(p=>['Rush','Scramble'].includes(p.play)).reduce((a,p)=>a+p.yds,0),rtd=plays.filter(p=>p.td&&['Rush','Scramble'].includes(p.play)).length;
+ $('summary').innerHTML=`<p><b>${$('qb').value||'QB'}</b> vs. <b>${$('opp').value||'Opponent'}</b></p>
+ <p>Passing: <b>${comp}/${att}</b> (${att?Math.round(comp/att*100):0}%) for <b>${py}</b> yds, <b>${ptd}</b> TD, <b>${ints}</b> INT</p>
+ <p>Rushing: <b>${ra}</b> att for <b>${ry}</b> yds, <b>${rtd}</b> TD</p>
+ <p>Plays logged: <b>${plays.length}</b></p>`;
+ summaryDialog.showModal()
+}
+function exportCSV(){
+ let rows=[['Play #','Quarter','Play','Result','Yards','TD','INT','First Down','Note']];
+ plays.forEach(p=>rows.push([p.n,p.q,p.play,p.result||'',p.yds,p.td?'Yes':'No',p.int?'Yes':'No',p.first?'Yes':'No',p.note||'']));
+ let csv=rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\n');
+ let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`QB_${$('opp').value||'Game'}_${$('date').value||''}.csv`;a.click();URL.revokeObjectURL(a.href)
+}
+function newGame(){if(confirm('Start a new game? Current game will be cleared. Export first if you want to keep it.')){plays=[];q=1;save();render()}}
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+}
+</script>
+
+</body>
+</html>
