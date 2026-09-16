@@ -1,4 +1,4 @@
-const KEY='QBSCORER_V5';
+const KEY='QBSCORER_V6';
 let game=JSON.parse(localStorage.getItem(KEY)||'null')||{meta:{},plays:[]};
 let pending=null;
 const $=id=>document.getElementById(id);
@@ -25,6 +25,7 @@ $('yards').addEventListener('keydown',e=>{if(e.key==='Enter')commit();});
 function commit(){
  if(!pending)return;
  const x={...pending,yards:Number($('yards').value)||0,receiver:$('receiver').value.trim(),td:$('td').checked,fd:$('fd').checked,note:$('playNote').value.trim()};
+ x.before={q:x.q,drive:x.drive,down:x.down,dist:x.dist};
  game.plays.push(x);advance(x);pending=null;$('modal').classList.add('hidden');save();
 }
 function advance(x){
@@ -57,7 +58,19 @@ $('csvBtn').addEventListener('click',()=>{
  const csv=rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='QB_game_stats.csv';a.click();URL.revokeObjectURL(a.href);
 });
+
+$('undoBtn').addEventListener('click',()=>{
+ if(!game.plays.length){alert('There are no plays to undo.');return;}
+ const x=game.plays.pop();
+ if(x.before){
+  $('quarter').value=x.before.q;
+  $('drive').value=x.before.drive;
+  $('down').value=x.before.down;
+  $('distance').value=x.before.dist;
+ }
+ save();
+});
 $('newBtn').addEventListener('click',()=>{if(confirm('Start a new game? Export CSV first if you want a copy.')){game={meta:{},plays:[]};localStorage.removeItem(KEY);['qb','opp','team','score'].forEach(id=>$(id).value='');$('drive').value=1;$('quarter').value='1st';$('down').value=1;$('distance').value=10;render();}});
 ['qb','opp','team','score'].forEach(id=>$(id).value=game.meta[id]||'');
 render();
-if('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js?v=5').catch(()=>{});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js?v=6').catch(()=>{});
