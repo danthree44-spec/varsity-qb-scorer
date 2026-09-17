@@ -1,266 +1,255 @@
-let plays = [];
-let pending = null;
-let history = [];
-let state = {q:1, down:1, distance:10, drive:1};
+(() => {
+  const $ = id => document.getElementById(id);
+  const state = { plays: [], pending: null, negative: false };
 
-const $ = id => document.getElementById(id);
-const KEY = "varsityQBScorerV3";
+  const metaIds = ["qb","opponent","team","score","quarter","drive","down","distance"];
+  metaIds.forEach(id => {
+    const el = $(id);
+    const saved = localStorage.getItem("qb_" + id);
+    if (saved !== null) el.value = saved;
+    el.addEventListener("input", () => localStorage.setItem("qb_" + id, el.value));
+    el.addEventListener("change", () => localStorage.setItem("qb_" + id, el.value));
+  });
 
-function load(){
-  try{
-    const s = JSON.parse(localStorage.getItem(KEY) || "null");
-    if(s){
-      plays = Array.isArray(s.plays) ? s.plays : [];
-      history = Array.isArray(s.history) ? s.history : [];
-      state = {...state, ...(s.state || {})};
-      const m=s.meta||{};
-      ["qb","opp","team","score"].forEach(id=>{ if(m[id]!==undefined) $(id).value=m[id]; });
+  const savedPlays = localStorage.getItem("qb_plays");
+  if (savedPlays) {
+    try { state.plays = JSON.parse(savedPlays) || []; } catch(e) { state.plays = []; }
+  }
+
+  function saveState() {
+    localStorage.setItem("qb_plays", JSON.stringify(state.plays));
+  }
+
+  function yardsValue() {
+    const raw = $("yards").value.trim().replace(",", ".");
+    if (!raw) return 0;
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return null;
+    return state.negative ? -Math.abs(n) : Math.abs(n);
+  }
+
+  function isPassing(type) {
+    return ["COMPLETE","INCOMPLETE","INTERCEPTION","SPIKE"].includes(type);
+  }
+
+  function openYardModal(type) {
+    state.pending = {
+      type,
+      quarter: $("quarter").value,
+      drive: $("drive").value,
+      down: $("down").value,
+      distance: $("distance").value
+    };
+    state.negative = false;
+    $("signBtn").textContent = "+";
+    $("signBtn").classList.remove("negative");
+    $("signHelp").textContent = "Positive yards";
+    $("yards").value = "";
+    $("yardTitle").textContent =
+      type === "SACK" ? "Sack yards" :
+      type === "FUMBLE" ? "Fumble / rushing yards" :
+      isPassing(type) ? "Passing yards" : "Rushing yards";
+    $("yardModal").classList.add("show");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => $("yards").focus(), 180);
+  }
+
+  function closeYardModal() {
+    $("yardModal").classList.remove("show");
+    state.pending = null;
+    document.body.style.overflow = "";
+  }
+
+  function toggleSign() {
+    state.negative = !state.negative;
+    $("signBtn").textContent = state.negative ? "−" : "+";
+    $("signBtn").classList.toggle("negative", state.negative);
+    $("signHelp").textContent = state.negative ? "Negative yards" : "Positive yards";
+  }
+
+  function advanceDown(yards) {
+    const oldDist = Number($("distance").value || 10);
+    if (yards >= oldDist) {
+      $("down").value = "1st";
+      $("distance").value = "10";
+    } else {
+      const downs = ["1st","2nd","3rd","4th"];
+      const idx = Math.max(0, downs.indexOf($("down").value));
+      const next = Math.min(idx + 1, 3);
+      $("down").value = downs[next];
+      const gainedForDown = Math.max(0, yards);
+      $("distance").value = String(Math.max(1, oldDist - gainedForDown));
     }
-  }catch(e){}
-  $("quarter").value = ({1:"1st",2:"2nd",3:"3rd",4:"4th"})[state.q] || "1st";
-  $("down").value = ({1:"1st",2:"2nd",3:"3rd",4:"4th"})[state.down] || "1st";
-  $("distance").value = state.distance;
-  $("drive").value = state.drive;
+    localStorage.setItem("qb_down", $("down").value);
+    localStorage.setItem("qb_distance", $("distance").value);
+  }
+
+  function commitPlay() {
+    const p = state.pending;
+    if (!p) return;
+    const y = yardsValue();
+    if (y === null) {
+      alert("Please enter a valid number of yards.");
+      return;
+    }
+
+    const play = {
+      id: Date.now(),
+      type: p.type,
+      yards: y,
+      quarter: p.quarter,
+      drive: p.drive,
+      down: p.down,
+      distance: p.distance,
+      td: false,
+      firstDown: false,
+      note: ""
+    };
+
+    state.plays.push(play);
+    saveState();
+    closeYardModal();
+    advanceDown(y);
+    render();
+  }
+
+  document.querySelectorAll("[data-play]").forEach(btn => {
+    btn.addEventListener("click", () => openYardModal(btn.dataset.play));
+  });
+
+  $("signBtn").addEventListener("click", toggleSign);
+  $("savePlay").addEventListener("click", commitPlay);
+  $("cancelPlay").addEventListener("click", closeYardModal);
+
+  $("yardModal").addEventListener("click", e => {
+    if (e.target === $("yardModal")) closeYardModal();
+  });
+
+  $("yards").addEventListener("keydown", e => {
+    if (e.key === "Enter") commitPlay();
+  });
+
+  $("noteBtn").addEventListener("click", () => {
+    $("noteText").value = "";
+    $("noteModal").classList.add("show");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => $("noteText").focus(), 180);
+  });
+  $("cancelNote").addEventListener("click", () => {
+    $("noteModal").classList.remove("show");
+    document.body.style.overflow = "";
+  });
+  $("noteModal").addEventListener("click", e => {
+    if (e.target === $("noteModal")) {
+      $("noteModal").classList.remove("show");
+      document.body.style.overflow = "";
+    }
+  });
+  $("saveNote").addEventListener("click", () => {
+    const text = $("noteText").value.trim();
+    if (text) {
+      state.plays.push({
+        id: Date.now(), type: "NOTE", yards: 0,
+        quarter: $("quarter").value, drive: $("drive").value,
+        down: $("down").value, distance: $("distance").value,
+        td: false, firstDown: false, note: text
+      });
+      saveState();
+      render();
+    }
+    $("noteModal").classList.remove("show");
+    document.body.style.overflow = "";
+  });
+
+  $("undoBtn").addEventListener("click", () => {
+    if (!state.plays.length) { alert("There is no saved play to undo."); return; }
+    state.plays.pop();
+    saveState();
+    render();
+  });
+
+  $("newBtn").addEventListener("click", () => {
+    if (!confirm("Start a new game? This clears the current game's plays from this phone.")) return;
+    state.plays = [];
+    saveState();
+    $("down").value = "1st";
+    $("distance").value = "10";
+    $("drive").value = "1";
+    localStorage.setItem("qb_down","1st");
+    localStorage.setItem("qb_distance","10");
+    localStorage.setItem("qb_drive","1");
+    render();
+  });
+
+  $("exportBtn").addEventListener("click", () => {
+    const headers = ["#","Quarter","Drive","Down","Distance","Play","Yards","TD","First Down","Note"];
+    const lines = [headers.join(",")];
+    state.plays.forEach((p,i) => {
+      const row = [i+1,p.quarter,p.drive,p.down,p.distance,p.type,p.yards,p.td,p.firstDown,p.note]
+        .map(v => `"${String(v ?? "").replace(/"/g,'""')}"`);
+      lines.push(row.join(","));
+    });
+    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "qb_game_stats.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  $("summaryBtn").addEventListener("click", () => {
+    const s = totals();
+    alert(
+      `QB SUMMARY\n\n` +
+      `Passing: ${s.comp}/${s.att} (${s.pct}%) for ${s.passYds} yds\n` +
+      `Pass TD: ${s.passTd}   INT: ${s.ints}\n` +
+      `Rushing: ${s.rushAtt} attempts for ${s.rushYds} yds`
+    );
+  });
+
+  function totals() {
+    let comp=0,att=0,passYds=0,passTd=0,ints=0,rushAtt=0,rushYds=0;
+    state.plays.forEach(p => {
+      if (p.type === "COMPLETE") { comp++; att++; passYds += p.yards; }
+      else if (p.type === "INCOMPLETE") { att++; }
+      else if (p.type === "INTERCEPTION") { att++; ints++; passYds += p.yards; }
+      else if (p.type === "SPIKE") { att++; }
+      else if (["QB RUN","SCRAMBLE"].includes(p.type)) { rushAtt++; rushYds += p.yards; }
+      else if (p.type === "SACK") { rushYds += p.yards; }
+      else if (p.type === "FUMBLE") { rushAtt++; rushYds += p.yards; }
+    });
+    return {comp,att,pct:att ? Math.round(comp/att*100) : 0,passYds,passTd,ints,rushAtt,rushYds};
+  }
+
+  function render() {
+    const s = totals();
+    $("comp").textContent=s.comp;
+    $("att").textContent=s.att;
+    $("cmpPct").textContent=s.pct+"%";
+    $("passYds").textContent=s.passYds;
+    $("passTd").textContent=s.passTd;
+    $("ints").textContent=s.ints;
+    $("rushAtt").textContent=s.rushAtt;
+    $("rushYds").textContent=s.rushYds;
+    $("next").textContent = `Next: ${$("down").value} & ${$("distance").value}`;
+
+    const recent = state.plays.slice(-10).reverse();
+    $("recent").innerHTML = recent.length ? recent.map((p,i) => {
+      const num = state.plays.length - i;
+      if (p.type === "NOTE") return `<div class="row">${num}. ${p.quarter} • NOTE • ${escapeHtml(p.note)}</div>`;
+      const yd = p.yards > 0 ? `+${p.yards}` : String(p.yards);
+      return `<div class="row">${num}. ${p.quarter} • ${p.down} & ${p.distance} • <b>${p.type}</b> ${yd} yds${p.firstDown ? " • 1D" : ""}${p.td ? " • TD" : ""}</div>`;
+    }).join("") : `<div class="hint">No plays yet.</div>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[c]));
+  }
+
   render();
-}
-
-function save(){
-  const meta={};
-  ["qb","opp","team","score"].forEach(id=>meta[id]=$(id).value);
-  localStorage.setItem(KEY, JSON.stringify({plays,history,state,meta}));
-}
-
-["qb","opp","team","score"].forEach(id=>$(id).addEventListener("input",save));
-
-$("quarter").addEventListener("change",()=>{
-  state.q={"1st":1,"2nd":2,"3rd":3,"4th":4}[$("quarter").value];
-  save(); render();
-});
-$("down").addEventListener("change",()=>{
-  state.down={"1st":1,"2nd":2,"3rd":3,"4th":4}[$("down").value];
-  save(); render();
-});
-$("distance").addEventListener("input",()=>{
-  const n=parseFloat($("distance").value);
-  if(Number.isFinite(n)) state.distance=n;
-  save(); render();
-});
-$("drive").addEventListener("input",()=>{
-  const n=parseInt($("drive").value,10);
-  if(Number.isFinite(n)) state.drive=n;
-  save(); render();
-});
-
-function snapshot(){ return JSON.parse(JSON.stringify(state)); }
-
-function startPass(result){
-  pending={kind:"pass",result};
-  $("passPrompt").textContent = result==="Complete" ? "Passing yards — COMPLETE" : "Passing yards — INCOMPLETE";
-  $("passYds").value="";
-  $("passBox").classList.remove("hidden");
-  $("passYds").focus();
-  window.scrollTo({top:$("passBox").getBoundingClientRect().top+window.scrollY-100,behavior:"smooth"});
-}
-
-function savePass(){
-  if(!pending || pending.kind!=="pass") return;
-  const raw=$("passYds").value.trim();
-  if(raw===""){alert("Enter the passing yards. Use 0 for no gain, or a negative number for a loss."); return;}
-  const y=Number(raw);
-  if(!Number.isFinite(y)){alert("Please enter a valid number.");return;}
-  addPlay({
-    play:pending.result,
-    category:"pass",
-    yds:y,
-    passYds:y,
-    rushYds:0,
-    int:false
-  });
-  pending=null; $("passBox").classList.add("hidden"); $("passYds").value="";
-}
-
-function recordInstant(type){
-  if(type==="Spike"){
-    addPlay({play:"Spike",category:"pass",yds:0,passYds:0,rushYds:0,int:false});
-  } else {
-    addPlay({play:"Interception",category:"pass",yds:0,passYds:0,rushYds:0,int:true});
-  }
-}
-
-function startRush(type){
-  pending={kind:"rush",type};
-  $("rushPrompt").textContent = type==="Sack" ? "Sack yards" : type==="Rush for Loss" ? "Rush for loss yards" : type==="Fumble" ? "Fumble play yards" : "Rushing yards";
-  $("rushYds").value="";
-  $("rushBox").classList.remove("hidden");
-  $("rushYds").focus();
-  window.scrollTo({top:$("rushBox").getBoundingClientRect().top+window.scrollY-100,behavior:"smooth"});
-}
-
-function saveRush(){
-  if(!pending || pending.kind!=="rush") return;
-  const raw=$("rushYds").value.trim();
-  if(raw===""){alert("Enter the yards. Use a negative number for a loss.");return;}
-  const y=Number(raw);
-  if(!Number.isFinite(y)){alert("Please enter a valid number.");return;}
-  const type=pending.type;
-  addPlay({
-    play:type,
-    category:(type==="Sack"?"sack":"rush"),
-    yds:y,
-    passYds:0,
-    rushYds:y,
-    int:false,
-    fumble:type==="Fumble"
-  });
-  pending=null; $("rushBox").classList.add("hidden"); $("rushYds").value="";
-}
-
-function addPlay(data){
-  history.push(snapshot());
-  const p={
-    n:plays.length+1,
-    q:state.q,
-    drive:state.drive,
-    down:state.down,
-    distance:Number(state.distance),
-    play:data.play,
-    category:data.category,
-    yds:Number(data.yds)||0,
-    passYds:Number(data.passYds)||0,
-    rushYds:Number(data.rushYds)||0,
-    td:false,
-    int:!!data.int,
-    fumble:!!data.fumble,
-    first:false,
-    note:""
-  };
-  plays.push(p);
-  advanceDown(p);
-  save(); render();
-}
-
-function advanceDown(p){
-  // First down or touchdown resets to 1st & 10.
-  if(p.td || p.first){
-    state.down=1; state.distance=10; return;
-  }
-  const gained = Number(p.yds)||0;
-  const remaining = Math.max(0, Number(state.distance)-gained);
-  if(gained >= Number(state.distance)){
-    state.down=1; state.distance=10;
-  }else{
-    state.down = state.down>=4 ? 1 : state.down+1;
-    state.distance = Math.max(1, remaining);
-  }
-}
-
-function markTD(){
-  if(!plays.length){alert("Save a play first.");return;}
-  plays[plays.length-1].td=true;
-  state.down=1; state.distance=10;
-  save(); render();
-}
-function addFirstDown(){
-  if(!plays.length){alert("Save a play first.");return;}
-  plays[plays.length-1].first=true;
-  state.down=1; state.distance=10;
-  save(); render();
-}
-
-function openNote(){
-  $("noteText").value="";
-  noteDialog.showModal();
-  $("noteText").focus();
-}
-function saveNote(){
-  const t=$("noteText").value.trim();
-  if(t){
-    history.push(snapshot());
-    plays.push({n:plays.length+1,q:state.q,drive:state.drive,down:state.down,distance:Number(state.distance),play:"NOTE",category:"note",yds:0,passYds:0,rushYds:0,td:false,int:false,fumble:false,first:false,note:t});
-    save(); render();
-  }
-  noteDialog.close();
-}
-
-function undo(){
-  if(!plays.length){alert("There are no saved plays to undo.");return;}
-  plays.pop();
-  const prev=history.pop();
-  if(prev) state=prev;
-  pending=null;
-  $("passBox").classList.add("hidden");
-  $("rushBox").classList.add("hidden");
-  save(); render();
-}
-
-function stats(){
-  const pass=plays.filter(p=>p.category==="pass");
-  const comp=pass.filter(p=>p.play==="Complete").length;
-  const att=pass.filter(p=>["Complete","Incomplete","Interception","Spike"].includes(p.play)).length;
-  const passyds=pass.filter(p=>["Complete","Incomplete","Interception","Spike"].includes(p.play)).reduce((a,p)=>a+p.passYds,0);
-  const ptd=plays.filter(p=>p.td && p.category==="pass").length;
-  const ints=plays.filter(p=>p.int).length;
-  const rush=plays.filter(p=>p.category==="rush");
-  const rushatt=rush.filter(p=>["QB Run","Scramble","Rush for Loss","Fumble"].includes(p.play)).length;
-  const rushyds=rush.reduce((a,p)=>a+p.rushYds,0);
-  return {comp,att,passyds,ptd,ints,rushatt,rushyds,pct:att?Math.round(comp/att*100):0};
-}
-
-function render(){
-  const s=stats();
-  $("comp").textContent=s.comp;
-  $("att").textContent=s.att;
-  $("pct").textContent=s.pct+"%";
-  $("passyds").textContent=s.passyds;
-  $("ptd").textContent=s.ptd;
-  $("int").textContent=s.ints;
-  $("rushatt").textContent=s.rushatt;
-  $("rushyds").textContent=s.rushyds;
-  $("next").textContent=`Next: ${ord(state.down)} & ${fmtNum(state.distance)}`;
-
-  $("recent").innerHTML=plays.slice(-12).reverse().map(p=>{
-    const flags=[p.td?"TD":"",p.int?"INT":"",p.first?"1D":"",p.fumble?"FUMBLE":""].filter(Boolean).join(" • ");
-    const yards=p.yds!==0 ? ` ${p.yds>0?"+":""}${fmtNum(p.yds)} yds` : " 0 yds";
-    return `<div class="playrow"><b>${p.n}. ${ord(p.q)} • ${ord(p.down)} & ${fmtNum(p.distance)} • ${esc(p.play)}</b>${yards}${flags?" • "+flags:""}${p.note?" • "+esc(p.note):""}</div>`;
-  }).join("") || `<div class="playrow" style="color:#777">No plays saved yet.</div>`;
-}
-
-function ord(n){return n===1?"1st":n===2?"2nd":n===3?"3rd":"4th";}
-function fmtNum(n){return Number.isInteger(Number(n))?String(Number(n)):String(Number(n).toFixed(1)).replace(/\.0$/,"");}
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
-
-function openSummary(){
-  const s=stats();
-  $("summary").innerHTML=
-    `<div><b>${esc($("qb").value||"QB")}</b> vs. <b>${esc($("opp").value||"Opponent")}</b></div>
-     <div>Passing: <b>${s.comp}/${s.att}</b> (${s.pct}%) for <b>${s.passyds}</b> yds, <b>${s.ptd}</b> TD, <b>${s.ints}</b> INT</div>
-     <div>Rushing: <b>${s.rushatt}</b> att for <b>${s.rushyds}</b> yds</div>
-     <div>Plays saved: <b>${plays.length}</b></div>`;
-  summaryDialog.showModal();
-}
-
-function exportCSV(){
-  const rows=[["Play #","Quarter","Drive","Down","Distance","Play","Yards","Pass Yds","Rush Yds","TD","INT","Fumble","First Down","Note"]];
-  plays.forEach(p=>rows.push([p.n,ord(p.q),p.drive,ord(p.down),fmtNum(p.distance),p.play,p.yds,p.passYds,p.rushYds,p.td?"Yes":"No",p.int?"Yes":"No",p.fumble?"Yes":"No",p.first?"Yes":"No",p.note||""]));
-  const csv=rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");
-  const blob=new Blob([csv],{type:"text/csv"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=`QB_${($("opp").value||"Game").replace(/[^a-z0-9_-]/gi,"_")}.csv`;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
-
-function newGame(){
-  if(!confirm("Start a new game? Current game will be cleared.")) return;
-  plays=[]; history=[]; pending=null; state={q:1,down:1,distance:10,drive:1};
-  ["qb","opp","team","score"].forEach(id=>$(id).value="");
-  $("quarter").value="1st";$("down").value="1st";$("distance").value=10;$("drive").value=1;
-  save();render();
-}
-
-load();
-
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js?v=3").catch(()=>{}));
-}
+})();

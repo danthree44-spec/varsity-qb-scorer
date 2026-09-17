@@ -1,131 +1,236 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111111">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png">
-<title>Varsity QB Scorer</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#f1f2f4;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:100px}
-header{background:#111;color:#fff;padding:34px 28px 28px}
-h1{font-size:34px;margin:0 0 24px;font-weight:800}h2{font-size:25px;letter-spacing:1.5px;color:#555;margin:28px 8px 14px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid input,.gamegrid input,.gamegrid select{width:100%;min-height:70px;border:2px solid #ccc;border-radius:18px;padding:0 28px;font-size:22px;background:#fff;color:#111}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}.stat{background:#292929;border-radius:18px;min-height:108px;display:flex;flex-direction:column;align-items:center;justify-content:center}.stat b{font-size:48px;line-height:1}.stat span{font-size:17px;margin-top:10px;color:#ddd}
-main{max-width:900px;margin:auto;padding:18px 28px}.card{background:#fff;border-radius:22px;padding:20px 24px;box-shadow:0 2px 9px #d9d9d9}.gamegrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field label{display:block;font-weight:700;font-size:17px;color:#666;margin:0 0 7px}.field input,.field select{min-height:62px;border:2px solid #c8c8c8;border-radius:18px;padding:0 22px;font-size:20px}
-.next{margin:18px 0;background:#eaf4ff;border-radius:18px;padding:20px;text-align:center;font-size:25px;font-weight:800}
-.buttons{display:grid;grid-template-columns:1fr 1fr;gap:18px}.btn{border:0;border-radius:20px;min-height:90px;background:#fff;box-shadow:0 4px 10px #d8d8d8;font-size:24px;font-weight:800;color:#2878d5}.btn:active{transform:scale(.98)}.good{background:#e3f6df}.danger{background:#ffe1e1}.dark{background:#111;color:#fff}.wide{grid-column:1/-1}
-.hidden{display:none!important}
-.yardbox{background:#fff;border-radius:20px;padding:18px;margin-top:18px;box-shadow:0 2px 8px #ddd}.yardbox h3{margin:0 0 12px;font-size:22px}.yardrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.yardrow input{min-height:70px;border:2px solid #bbb;border-radius:16px;padding:0 18px;font-size:25px}.yardrow button{min-height:70px}
-.helper{color:#666;font-size:17px;margin:10px 4px 0}.recent{background:#fff;border-radius:20px;padding:4px 20px}.playrow{padding:18px 0;border-bottom:1px solid #ddd;font-size:20px}.playrow:last-child{border-bottom:0}.playrow b{font-size:21px}
-.bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ccc;padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.bottom button{border:0;border-radius:18px;background:#111;color:#fff;min-height:64px;font-size:17px;font-weight:800}
-dialog{border:0;border-radius:22px;width:min(92vw,560px);padding:22px;box-shadow:0 10px 60px #777}dialog::backdrop{background:#0008}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.modal-actions button{min-height:58px;border:0;border-radius:14px;font-weight:800;font-size:18px}
-.summaryline{font-size:19px;line-height:1.65}
-@media(max-width:620px){header{padding:30px 28px 22px}h1{font-size:32px}.stats{gap:12px}.stat{min-height:98px}.stat b{font-size:40px}.stat span{font-size:15px}main{padding:14px 28px}.btn{min-height:84px;font-size:21px}.bottom button{font-size:15px}.bottom{grid-template-columns:repeat(4,1fr)}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="QB Scorer">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <title>Varsity QB Scorer</title>
+  <style>
+    :root{
+      --bg:#f2f3f5;--card:#fff;--ink:#111;--muted:#68707a;--line:#d9dde2;
+      --blue:#1769d1;--blue-soft:#eaf2ff;--green:#dff5d8;--red:#ffe2e2;
+      --shadow:0 2px 12px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{background:var(--bg)}
+    body{
+      margin:0;background:var(--bg);color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;
+      -webkit-font-smoothing:antialiased;
+      padding-bottom:calc(92px + env(safe-area-inset-bottom));
+    }
+    button,input,select{font:inherit}
+    button{touch-action:manipulation}
+    header{
+      background:#111;color:#fff;
+      padding:calc(10px + env(safe-area-inset-top)) 16px 14px;
+      position:sticky;top:0;z-index:10;
+    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    h1{font-size:25px;line-height:1.05;margin:0;font-weight:850;letter-spacing:-.5px}
+    .live-pill{font-size:12px;font-weight:800;letter-spacing:.5px;background:#292929;border:1px solid #444;border-radius:999px;padding:7px 10px;white-space:nowrap}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .meta input{
+      width:100%;height:48px;border:1px solid #555;border-radius:13px;padding:0 12px;
+      font-size:17px;background:#222;color:#fff;outline:none;
+    }
+    .meta input::placeholder{color:#aeb3ba}
+    .stats{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px;
+    }
+    .stat{
+      min-width:0;background:#292929;border-radius:12px;padding:8px 3px;text-align:center;
+    }
+    .stat b{display:block;font-size:23px;line-height:1.05;font-variant-numeric:tabular-nums}
+    .stat span{display:block;font-size:9px;margin-top:4px;color:#c9cdd2;font-weight:750;letter-spacing:.35px}
+    main{max-width:720px;margin:0 auto;padding:12px 14px 18px}
+    .card{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+    .section-title{font-size:15px;font-weight:850;letter-spacing:.7px;color:#555;margin:2px 0 10px}
+    .drive-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    label{font-weight:750;color:var(--muted);font-size:13px;display:block;margin:0 0 5px}
+    .drive input,.drive select,.drive-grid input,.drive-grid select{
+      width:100%;height:48px;border:1px solid var(--line);border-radius:13px;padding:0 12px;
+      font-size:18px;background:#fff;color:#111;outline:none;
+    }
+    .next{
+      background:var(--blue-soft);border:1px solid #cfe0fb;border-radius:16px;
+      padding:12px;text-align:center;font-size:21px;font-weight:850;margin:0 0 13px;
+    }
+    .hint{color:var(--muted);font-size:13px;line-height:1.35;margin:9px 2px 0}
+    section{margin-bottom:14px}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .play{
+      min-height:72px;border:0;border-radius:17px;background:#fff;box-shadow:var(--shadow);
+      color:var(--blue);font-size:18px;font-weight:850;letter-spacing:.1px;
+    }
+    .play:active,.bottom button:active,.sheet-actions button:active,#signBtn:active{transform:scale(.98)}
+    .play.good{background:var(--green);color:#145f10}
+    .play.bad{background:var(--red);color:#a71919}
+    .recent{background:#fff;border-radius:18px;padding:10px 13px;box-shadow:var(--shadow)}
+    .row{padding:11px 2px;border-bottom:1px solid #e5e7ea;font-size:15px;line-height:1.35}
+    .row:last-child{border-bottom:0}
+    .bottom{
+      position:fixed;left:0;right:0;bottom:0;
+      background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      border-top:1px solid #d9dce0;
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      display:grid;grid-template-columns:repeat(4,1fr);gap:7px;z-index:20;
+    }
+    .bottom button{
+      height:52px;border:0;border-radius:15px;background:#111;color:#fff;font-weight:850;font-size:12px;
+    }
+    .modal{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:50;
+    }
+    .modal.show{display:flex}
+    .sheet{
+      width:100%;max-width:720px;background:#fff;border-radius:25px 25px 0 0;
+      padding:14px 16px calc(18px + env(safe-area-inset-bottom));
+      box-shadow:0 -10px 35px rgba(0,0,0,.25);
+    }
+    .grabber{width:42px;height:5px;border-radius:999px;background:#c9ccd0;margin:0 auto 14px}
+    .sheet h2{margin:0 0 12px;font-size:25px;letter-spacing:-.3px}
+    .yard-line{display:grid;grid-template-columns:1fr 72px;gap:8px;align-items:stretch}
+    #yards{
+      width:100%;height:68px;border:2px solid #9ec8ff;border-radius:17px;
+      padding:0 15px;font-size:30px;background:#fff;outline:none;
+    }
+    #yards:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,105,209,.12)}
+    #yards::placeholder{color:#aaa;font-size:20px}
+    #signBtn{
+      height:68px;border:0;border-radius:17px;background:var(--blue-soft);color:var(--blue);
+      font-size:34px;font-weight:900;
+    }
+    #signBtn.negative{background:var(--red);color:#c51f1f}
+    .sign-help{text-align:center;color:#666;font-size:13px;font-weight:700;margin:7px 0 13px}
+    .sheet-note{color:#666;font-size:13px;line-height:1.35;margin:0 2px 14px}
+    .sheet-actions{display:grid;grid-template-columns:1fr 1.35fr;gap:9px}
+    .sheet-actions button{height:58px;border:0;border-radius:17px;font-size:17px;font-weight:850}
+    #savePlay{background:var(--green);color:#145f10}
+    #cancelPlay{background:#eee}
+    #noteText{width:100%;height:58px;border:1px solid #ccc;border-radius:17px;padding:0 14px;font-size:18px;outline:none}
+    @media(min-width:700px){
+      header{padding-left:24px;padding-right:24px}
+      .meta{grid-template-columns:repeat(4,1fr)}
+      .stats{grid-template-columns:repeat(8,1fr)}
+    }
+    @media(max-width:370px){
+      .stat b{font-size:20px}.stat span{font-size:8px}.play{font-size:16px;min-height:68px}
+      .bottom button{font-size:11px}.meta input{font-size:16px}
+    }
+  </style>
 </head>
 <body>
 <header>
-  <h1>🏈 Varsity QB Scorer</h1>
-  <div class="grid">
-    <input id="qb" placeholder="QB name">
-    <input id="opp" placeholder="Opponent">
-    <input id="team" placeholder="Team">
-    <input id="score" placeholder="Score (optional)">
+  <div class="topbar">
+    <h1>🏈 Varsity QB Scorer</h1>
+    <div class="live-pill">LIVE GAME</div>
+  </div>
+  <div class="meta">
+    <input id="qb" placeholder="QB name" autocomplete="off">
+    <input id="opponent" placeholder="Opponent" autocomplete="off">
+    <input id="team" placeholder="Team" autocomplete="off">
+    <input id="score" placeholder="Score" autocomplete="off">
   </div>
   <div class="stats">
     <div class="stat"><b id="comp">0</b><span>COMP</span></div>
     <div class="stat"><b id="att">0</b><span>ATT</span></div>
-    <div class="stat"><b id="pct">0%</b><span>CMP %</span></div>
-    <div class="stat"><b id="passyds">0</b><span>PASS YDS</span></div>
-    <div class="stat"><b id="ptd">0</b><span>PASS TD</span></div>
-    <div class="stat"><b id="int">0</b><span>INT</span></div>
-    <div class="stat"><b id="rushatt">0</b><span>RUSH ATT</span></div>
-    <div class="stat"><b id="rushyds">0</b><span>RUSH YDS</span></div>
+    <div class="stat"><b id="cmpPct">0%</b><span>CMP %</span></div>
+    <div class="stat"><b id="passYds">0</b><span>PASS YDS</span></div>
+    <div class="stat"><b id="passTd">0</b><span>PASS TD</span></div>
+    <div class="stat"><b id="ints">0</b><span>INT</span></div>
+    <div class="stat"><b id="rushAtt">0</b><span>RUSH ATT</span></div>
+    <div class="stat"><b id="rushYds">0</b><span>RUSH YDS</span></div>
   </div>
 </header>
 
 <main>
-  <div class="card">
-    <h2 style="margin-top:0">GAME / DRIVE</h2>
-    <div class="gamegrid">
-      <div class="field"><label>Quarter</label><select id="quarter"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option></select></div>
-      <div class="field"><label>Drive #</label><input id="drive" type="number" min="1" value="1"></div>
-      <div class="field"><label>Down</label><select id="down"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option></select></div>
-      <div class="field"><label>Distance to 1st</label><input id="distance" type="number" step="0.5" value="10"></div>
+  <section class="card">
+    <div class="section-title">GAME / DRIVE</div>
+    <div class="drive-grid">
+      <div><label>Quarter</label><select id="quarter"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>OT</option></select></div>
+      <div><label>Drive #</label><input id="drive" value="1" inputmode="numeric"></div>
+      <div><label>Down</label><select id="down"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option></select></div>
+      <div><label>Distance to 1st</label><input id="distance" value="10" inputmode="decimal"></div>
     </div>
-    <div class="helper">After a play is saved, down & distance advance using the play result. You can always edit them before the next play.</div>
-  </div>
+  </section>
 
-  <div class="next" id="next">Next: 1st & 10</div>
+  <div class="next" id="next">Next: 1st &amp; 10</div>
 
-  <h2>PASSING</h2>
-  <div class="buttons">
-    <button class="btn good" onclick="startPass('Complete')">✓ COMPLETE</button>
-    <button class="btn" onclick="startPass('Incomplete')">INCOMPLETE</button>
-    <button class="btn danger" onclick="recordInstant('Interception')">⚠ INTERCEPTION</button>
-    <button class="btn" onclick="recordInstant('Spike')">SPIKE</button>
-  </div>
-
-  <div id="passBox" class="yardbox hidden">
-    <h3 id="passPrompt">Passing yards</h3>
-    <div class="yardrow">
-      <input id="passYds" type="number" step="0.5" inputmode="decimal" placeholder="Yards (negative allowed)">
-      <button class="btn good" onclick="savePass()">SAVE PLAY</button>
+  <section>
+    <div class="section-title">PASSING</div>
+    <div class="buttons">
+      <button class="play good" data-play="COMPLETE">✓ COMPLETE</button>
+      <button class="play" data-play="INCOMPLETE">INCOMPLETE</button>
+      <button class="play bad" data-play="INTERCEPTION">⚠ INTERCEPTION</button>
+      <button class="play" data-play="SPIKE">SPIKE</button>
     </div>
-    <div class="helper">Use a negative number for a completion that loses yards, e.g. -3.</div>
-  </div>
+  </section>
 
-  <h2>RUSHING / NEGATIVE PLAYS</h2>
-  <div class="buttons">
-    <button class="btn good" onclick="startRush('QB Run')">QB RUN</button>
-    <button class="btn" onclick="startRush('Scramble')">SCRAMBLE</button>
-    <button class="btn" onclick="startRush('Rush for Loss')">RUSH FOR LOSS</button>
-    <button class="btn" onclick="startRush('Sack')">SACK</button>
-    <button class="btn danger" onclick="startRush('Fumble')">FUMBLE</button>
-    <button class="btn wide" onclick="openNote()">NOTE / RECEIVER</button>
-  </div>
-
-  <div id="rushBox" class="yardbox hidden">
-    <h3 id="rushPrompt">Rushing yards</h3>
-    <div class="yardrow">
-      <input id="rushYds" type="number" step="0.5" inputmode="decimal" placeholder="Yards (negative allowed)">
-      <button class="btn good" onclick="saveRush()">SAVE PLAY</button>
+  <section>
+    <div class="section-title">RUSHING / NEGATIVE PLAYS</div>
+    <div class="buttons">
+      <button class="play good" data-play="QB RUN">QB RUN</button>
+      <button class="play" data-play="SCRAMBLE">SCRAMBLE</button>
+      <button class="play" data-play="SACK">SACK</button>
+      <button class="play bad" data-play="FUMBLE">FUMBLE</button>
     </div>
-    <div class="helper">For sacks, rushes for loss, or fumble plays, enter negative yards such as -5.</div>
-  </div>
+  </section>
 
-  <h2>RECENT PLAYS</h2>
-  <div class="recent" id="recent"></div>
-  <div class="helper">Made a mistake? Use ↩ UNDO to remove the last saved play and restore the previous down & distance.</div>
+  <section>
+    <div class="section-title">OTHER</div>
+    <div class="buttons">
+      <button class="play" id="noteBtn">NOTE / RECEIVER</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">RECENT PLAYS</div>
+    <div class="recent" id="recent"><div class="hint">No plays yet.</div></div>
+  </section>
 </main>
 
 <div class="bottom">
-  <button onclick="undo()">↩ UNDO</button>
-  <button onclick="openSummary()">SUMMARY</button>
-  <button onclick="exportCSV()">EXPORT</button>
-  <button onclick="newGame()">NEW GAME</button>
+  <button id="undoBtn">↩ UNDO</button>
+  <button id="summaryBtn">SUMMARY</button>
+  <button id="exportBtn">EXPORT</button>
+  <button id="newBtn">NEW GAME</button>
 </div>
 
-<dialog id="noteDialog">
-  <h2 style="margin-top:0">Note / Receiver</h2>
-  <input id="noteText" style="width:100%;min-height:60px;border:2px solid #bbb;border-radius:14px;padding:12px;font-size:19px" placeholder="Receiver, play note, etc.">
-  <div class="modal-actions">
-    <button onclick="noteDialog.close()">CANCEL</button>
-    <button class="good" onclick="saveNote()">SAVE NOTE</button>
+<div class="modal" id="yardModal">
+  <div class="sheet">
+    <div class="grabber"></div>
+    <h2 id="yardTitle">Yards</h2>
+    <div class="yard-line">
+      <input id="yards" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter yards">
+      <button id="signBtn" type="button" aria-label="Toggle positive or negative yards">+</button>
+    </div>
+    <div class="sign-help" id="signHelp">Positive yards</div>
+    <div class="sheet-note">For sacks, losses, fumbles, or a completed pass for loss, tap <b>+</b> to change it to <b>−</b>, then enter the yardage as a positive number. Example: 5 → −5.</div>
+    <div class="sheet-actions">
+      <button id="cancelPlay" type="button">CANCEL</button>
+      <button id="savePlay" type="button">SAVE PLAY</button>
+    </div>
   </div>
-</dialog>
+</div>
 
-<dialog id="summaryDialog">
-  <h2 style="margin-top:0">Game Summary</h2>
-  <div id="summary" class="summaryline"></div>
-  <div class="modal-actions">
-    <button onclick="summaryDialog.close()">CLOSE</button>
-    <button class="good" onclick="exportCSV()">EXPORT CSV</button>
+<div class="modal" id="noteModal">
+  <div class="sheet">
+    <div class="grabber"></div>
+    <h2>Note / Receiver</h2>
+    <input id="noteText" type="text" placeholder="Receiver, note, coverage, etc." autocomplete="off">
+    <div class="sheet-actions" style="margin-top:14px">
+      <button id="cancelNote" type="button">CANCEL</button>
+      <button id="saveNote" type="button">SAVE NOTE</button>
+    </div>
   </div>
-</dialog>
+</div>
 
-<script src="app.js?v=3"></script>
+<script src="app.js"></script>
 </body>
 </html>
