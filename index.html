@@ -44,10 +44,12 @@ main{max-width:600px;margin:0 auto;padding:10px 11px 14px}
 .sheet{width:100%;max-width:600px;margin:0 auto;background:#fff;border-radius:23px 23px 0 0;padding:11px 14px calc(15px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.25)}
 .grab{width:40px;height:5px;border-radius:99px;background:#c9ccd0;margin:0 auto 12px}
 .sheet h2{font-size:23px;margin:0 0 11px}
-.yardline{display:grid;grid-template-columns:1fr 66px;gap:7px}
-.yardline input{height:65px;border:2px solid #9ec8ff;border-radius:16px;padding:0 13px;font-size:29px;outline:0}.yardline input:focus{border-color:#1769d1}
-.sign{height:65px;border:0;border-radius:16px;background:#eaf2ff;color:#1769d1;font-size:33px;font-weight:900}.sign.neg{background:#ffe2e2;color:#c51f1f}
-.signhelp{text-align:center;color:#666;font-size:11px;font-weight:750;margin:5px 0 10px}
+.yardline{display:flex;flex-direction:column;gap:7px}
+.sign{order:0;width:100%;height:52px;border:0;border-radius:15px;background:#eaf2ff;color:#1769d1;font-size:28px;font-weight:900}
+.sign.neg{background:#ffe2e2;color:#c51f1f}
+.yardline input{order:1;height:65px;width:100%;border:2px solid #9ec8ff;border-radius:16px;padding:0 13px;font-size:29px;outline:0}
+.yardline input:focus{border-color:#1769d1}
+.signhelp{text-align:center;color:#666;font-size:11px;font-weight:750;margin:4px 0 8px}
 .explain{font-size:12px;color:#666;line-height:1.35;margin-bottom:11px}
 .actions{display:grid;grid-template-columns:1fr 1.35fr;gap:7px}.actions button{height:55px;border:0;border-radius:15px;font-size:15px;font-weight:850}.cancel{background:#eee}.save{background:#dff5d8;color:#145f10}
 #noteText{width:100%;height:55px;border:1px solid #ccc;border-radius:15px;padding:0 12px;font-size:16px;outline:0}
@@ -108,7 +110,7 @@ main{max-width:600px;margin:0 auto;padding:10px 11px 14px}
 
 <div class="modal" id="yardModal"><div class="sheet"><div class="grab"></div>
 <h2 id="yardTitle">Yards</h2>
-<div class="yardline"><input id="yards" type="text" inputmode="decimal" placeholder="Enter yards" autocomplete="off"><button class="sign" id="sign" type="button">+</button></div>
+<div class="yardline"><button class="sign" id="sign" type="button">+</button><input id="yards" type="text" inputmode="decimal" placeholder="Enter yards" autocomplete="off"></div>
 <div class="signhelp" id="signhelp">Positive yards</div>
 <div class="explain">For a sack, rushing loss, fumble, or pass completed for loss: tap <b>+</b> to change it to <b>−</b>, then enter the number. Example: <b>5 → −5</b>.</div>
 <div class="actions"><button class="cancel" id="cancel">CANCEL</button><button class="save" id="save">SAVE PLAY</button></div>
@@ -135,7 +137,7 @@ function openPlay(type){
  pending={type:type,q:$("q").value};
  negative=false;$("sign").textContent="+";$("sign").classList.remove("neg");$("signhelp").textContent="Positive yards";$("yards").value="";
  $("yardTitle").textContent=type==="SACK"?"Sack yards":type==="FUMBLE"?"Fumble / rushing yards":(type==="QB RUN"||type==="SCRAMBLE")?"Rushing yards":"Passing yards";
- show("yardModal");setTimeout(function(){$("yards").focus()},120);
+ show("yardModal");
 }
 document.querySelectorAll("[data-play]").forEach(function(b){b.addEventListener("click",function(){openPlay(b.getAttribute("data-play"))})});
 $("sign").addEventListener("click",function(){negative=!negative;$("sign").textContent=negative?"−":"+";$("sign").classList.toggle("neg",negative);$("signhelp").textContent=negative?"Negative yards":"Positive yards"});
@@ -148,7 +150,7 @@ $("save").addEventListener("click",function(){
 $("cancel").addEventListener("click",function(){hide("yardModal")});
 $("yardModal").addEventListener("click",function(e){if(e.target===$("yardModal"))hide("yardModal")});
 $("yards").addEventListener("keydown",function(e){if(e.key==="Enter")$("save").click()});
-$("noteBtn").addEventListener("click",function(){$("noteText").value="";show("noteModal");setTimeout(function(){$("noteText").focus()},120)});
+$("noteBtn").addEventListener("click",function(){$("noteText").value="";show("noteModal");});
 $("noteCancel").addEventListener("click",function(){hide("noteModal")});
 $("noteSave").addEventListener("click",function(){var t=$("noteText").value.trim();if(t){plays.push({type:"NOTE",yards:0,q:$("q").value,note:t});localStorage.setItem("qb_simple_12",JSON.stringify(plays));render()}hide("noteModal")});
 $("undo").addEventListener("click",function(){if(!plays.length){alert("No saved play to undo.");return}plays.pop();localStorage.setItem("qb_simple_12",JSON.stringify(plays));render()});
