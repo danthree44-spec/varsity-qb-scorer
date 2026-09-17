@@ -52,6 +52,11 @@ main{max-width:600px;margin:0 auto;padding:10px 11px 14px}
 .signhelp{text-align:center;color:#666;font-size:11px;font-weight:750;margin:4px 0 8px}
 .explain{font-size:12px;color:#666;line-height:1.35;margin-bottom:11px}
 .actions{display:grid;grid-template-columns:1fr 1.35fr;gap:7px}.actions button{height:55px;border:0;border-radius:15px;font-size:15px;font-weight:850}.cancel{background:#eee}.save{background:#dff5d8;color:#145f10}
+.play-details{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 0 10px}
+.play-details input{width:100%;height:45px;border:1px solid #d0d4d8;border-radius:12px;padding:0 10px;font-size:15px;outline:0;background:#fff}
+.play-details input:focus{border-color:#1769d1}
+.tdrow{grid-column:1/-1;height:45px;border-radius:12px;background:#ffe9a8;display:flex;align-items:center;padding:0 11px;font-size:14px;font-weight:850;color:#5b4700}
+.tdrow input{width:22px;height:22px;margin:0 9px 0 0;accent-color:#1769d1}
 #noteText{width:100%;height:55px;border:1px solid #ccc;border-radius:15px;padding:0 12px;font-size:16px;outline:0}
 @media(max-height:700px){.play{min-height:57px}.stat{padding:5px 1px}.stat b{font-size:18px}.meta input{height:40px}.gamebar{padding:8px}}
 </style>
@@ -98,7 +103,7 @@ main{max-width:600px;margin:0 auto;padding:10px 11px 14px}
 </div></div>
 
 <div class="section"><div class="title">OTHER</div><div class="buttons">
-<button class="play" id="noteBtn">NOTE / RECEIVER</button>
+<button class="play" id="noteBtn">QUICK NOTE</button>
 </div></div>
 
 <div class="recent"><div class="title">RECENT PLAYS</div><div id="recent"><div class="empty">No plays yet.</div></div></div>
@@ -113,6 +118,11 @@ main{max-width:600px;margin:0 auto;padding:10px 11px 14px}
 <div class="yardline"><button class="sign" id="sign" type="button">+</button><input id="yards" type="text" inputmode="decimal" placeholder="Enter yards" autocomplete="off"></div>
 <div class="signhelp" id="signhelp">Positive yards</div>
 <div class="explain">For a sack, rushing loss, fumble, or pass completed for loss: tap <b>+</b> to change it to <b>−</b>, then enter the number. Example: <b>5 → −5</b>.</div>
+<div class="play-details">
+  <input id="receiver" type="text" placeholder="Receiver (optional)" autocomplete="off">
+  <input id="playNote" type="text" placeholder="Note (optional)" autocomplete="off">
+  <label class="tdrow"><input id="td" type="checkbox"> <span>TOUCHDOWN</span></label>
+</div>
 <div class="actions"><button class="cancel" id="cancel">CANCEL</button><button class="save" id="save">SAVE PLAY</button></div>
 </div></div>
 
@@ -136,6 +146,7 @@ function hide(id){$(id).classList.remove("show");document.body.style.overflow=""
 function openPlay(type){
  pending={type:type,q:$("q").value};
  negative=false;$("sign").textContent="+";$("sign").classList.remove("neg");$("signhelp").textContent="Positive yards";$("yards").value="";
+ $("receiver").value="";$("playNote").value="";$("td").checked=false;
  $("yardTitle").textContent=type==="SACK"?"Sack yards":type==="FUMBLE"?"Fumble / rushing yards":(type==="QB RUN"||type==="SCRAMBLE")?"Rushing yards":"Passing yards";
  show("yardModal");
 }
@@ -144,7 +155,7 @@ $("sign").addEventListener("click",function(){negative=!negative;$("sign").textC
 function getYards(){var s=$("yards").value.trim().replace(",","."),n=Number(s);if(s===""||!Number.isFinite(n))return null;return negative?-Math.abs(n):Math.abs(n)}
 $("save").addEventListener("click",function(){
  if(!pending)return;var y=getYards();if(y===null){alert("Enter a valid number of yards.");return}
- plays.push({type:pending.type,yards:y,q:pending.q,note:""});
+ plays.push({type:pending.type,yards:y,q:pending.q,receiver:$("receiver").value.trim(),note:$("playNote").value.trim(),td:$("td").checked});
  localStorage.setItem("qb_simple_12",JSON.stringify(plays));hide("yardModal");render();
 });
 $("cancel").addEventListener("click",function(){hide("yardModal")});
@@ -161,7 +172,7 @@ var rows=[["#","Quarter","Play","Yards","Note"].join(",")];plays.forEach(functio
 var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.join("\\n")],{type:"text/csv"}));a.download="qb_game_stats.csv";document.body.appendChild(a);a.click();a.remove();
 });
 function totals(){var s={c:0,a:0,py:0,td:0,i:0,ra:0,ry:0};plays.forEach(function(p){
-if(p.type==="COMPLETE"){s.c++;s.a++;s.py+=p.yards}
+if(p.type==="COMPLETE"){s.c++;s.a++;s.py+=p.yards;if(p.td)s.td++}
 else if(p.type==="INCOMPLETE"){s.a++}
 else if(p.type==="INTERCEPTION"){s.a++;s.i++;s.py+=p.yards}
 else if(p.type==="SPIKE"){s.a++}
@@ -171,7 +182,9 @@ else if(p.type==="FUMBLE"){s.ra++;s.ry+=p.yards}
 });s.p=s.a?Math.round(s.c/s.a*100):0;return s}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]})}
 function render(){var s=totals();$("comp").textContent=s.c;$("att").textContent=s.a;$("pct").textContent=s.p+"%";$("py").textContent=s.py;$("ptd").textContent=s.td;$("int").textContent=s.i;$("ra").textContent=s.ra;$("ry").textContent=s.ry;
-var r=plays.slice(-10).reverse();$("recent").innerHTML=r.length?r.map(function(p,i){var n=plays.length-i;if(p.type==="NOTE")return '<div class="row">'+n+'. '+esc(p.q)+' • NOTE • '+esc(p.note)+'</div>';var y=p.yards>0?"+"+p.yards:String(p.yards);return '<div class="row">'+n+'. '+esc(p.q)+' • <b>'+esc(p.type)+'</b> '+y+' yds</div>'}).join(""):'<div class="empty">No plays yet.</div>'}
+var r=plays.slice(-10).reverse();$("recent").innerHTML=r.length?r.map(function(p,i){var n=plays.length-i;if(p.type==="NOTE")return '<div class="row">'+n+'. '+esc(p.q)+' • NOTE • '+esc(p.note)+'</div>';var y=p.yards>0?"+"+p.yards:String(p.yards);
+var extra=(p.receiver?" • "+esc(p.receiver):"")+(p.td?" • TD":"")+(p.note?" • "+esc(p.note):"");
+return '<div class="row">'+n+'. '+esc(p.q)+' • <b>'+esc(p.type)+'</b> '+y+' yds'+extra+'</div>'}).join(""):'<div class="empty">No plays yet.</div>'}
 render();
 })();
 </script>
