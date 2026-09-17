@@ -1,4 +1,3 @@
-// QB Scorer v11
-// The live scorer logic is intentionally embedded in index.html so the
-// scoring buttons work even if a browser has a stale external-JS cache.
-console.log("QB Scorer v11 loaded");
+// QB Scorer v12
+// Core scoring logic is embedded in index.html for reliable iPhone loading.
+console.log("QB Scorer v12");

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#111">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="QB Scorer">
@@ -11,115 +11,165 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>Varsity QB Scorer</title>
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{background:#f2f3f5}
-body{margin:0;background:#f2f3f5;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
-button,input,select{font:inherit}button{touch-action:manipulation;cursor:pointer}
-header{background:#111;color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 13px;position:sticky;top:0;z-index:10}
-.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.top h1{margin:0;font-size:24px;font-weight:850;letter-spacing:-.5px}.pill{background:#292929;border:1px solid #444;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:7px}.meta input{height:45px;width:100%;border:1px solid #555;border-radius:12px;background:#222;color:#fff;padding:0 11px;font-size:16px}.meta input::placeholder{color:#aaa}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.stat{text-align:center;background:#292929;border-radius:11px;padding:7px 2px}.stat b{display:block;font-size:21px;line-height:1.05;font-variant-numeric:tabular-nums}.stat span{display:block;margin-top:3px;font-size:8px;font-weight:800;color:#c8ccd1;letter-spacing:.3px}
-main{max-width:720px;margin:auto;padding:11px 12px 16px}.card,.recent{background:#fff;border-radius:17px;padding:13px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:11px}.title{font-size:13px;font-weight:850;color:#666;letter-spacing:.7px;margin-bottom:9px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid label{font-size:12px;color:#68707a;font-weight:750;display:block;margin-bottom:4px}.grid input,.grid select{width:100%;height:46px;border:1px solid #d9dde2;border-radius:12px;background:#fff;padding:0 10px;font-size:17px}
-.next{background:#eaf2ff;border:1px solid #cfe0fb;border-radius:15px;text-align:center;padding:11px;margin-bottom:12px;font-size:20px;font-weight:850}
-.section{margin-bottom:13px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.play{min-height:68px;border:0;border-radius:16px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.08);color:#1769d1;font-size:17px;font-weight:850}.play.good{background:#dff5d8;color:#145f10}.play.bad{background:#ffe2e2;color:#a71919}.play:active{transform:scale(.98)}
-.row{padding:10px 1px;border-bottom:1px solid #e5e7ea;font-size:14px;line-height:1.35}.row:last-child{border:0}.empty{color:#68707a;font-size:13px}
-.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:7px 9px calc(7px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid #d9dde2}.bottom button{height:50px;border:0;border-radius:14px;background:#111;color:#fff;font-size:11px;font-weight:850}
-.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);display:none;align-items:flex-end}.modal.show{display:flex}.sheet{width:100%;max-width:720px;margin:auto 0 0;background:#fff;border-radius:24px 24px 0 0;padding:12px 15px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 35px rgba(0,0,0,.25)}.grab{width:42px;height:5px;background:#c9ccd0;border-radius:99px;margin:0 auto 13px}.sheet h2{font-size:24px;margin:0 0 12px}
-.yardline{display:grid;grid-template-columns:1fr 70px;gap:8px}.yardline input{height:68px;border:2px solid #9ec8ff;border-radius:17px;padding:0 14px;font-size:30px;outline:0}.yardline input:focus{border-color:#1769d1}.yardline button{height:68px;border:0;border-radius:17px;background:#eaf2ff;color:#1769d1;font-size:34px;font-weight:900}.yardline button.neg{background:#ffe2e2;color:#c51f1f}.signhelp{text-align:center;font-size:12px;font-weight:750;color:#666;margin:6px 0 12px}.explain{font-size:12px;color:#666;line-height:1.35;margin-bottom:12px}.actions{display:grid;grid-template-columns:1fr 1.35fr;gap:8px}.actions button{height:57px;border:0;border-radius:16px;font-size:16px;font-weight:850}.cancel{background:#eee}.save{background:#dff5d8;color:#145f10}
-#noteText{width:100%;height:58px;border:1px solid #ccc;border-radius:16px;padding:0 13px;font-size:17px}
-@media(min-width:700px){.meta{grid-template-columns:repeat(4,1fr)}.stats{grid-template-columns:repeat(8,1fr)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#f2f3f5;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+button,input,select{font:inherit}button{touch-action:manipulation}
+header{background:#111;color:#fff;padding:calc(9px + env(safe-area-inset-top)) 12px 12px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+h1{font-size:22px;line-height:1;margin:0;font-weight:850;letter-spacing:-.4px}
+.live{font-size:10px;font-weight:850;letter-spacing:.5px;border:1px solid #555;border-radius:99px;padding:6px 8px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.meta input{height:43px;width:100%;border:1px solid #555;border-radius:11px;background:#222;color:#fff;padding:0 10px;font-size:16px;outline:none}
+.meta input::placeholder{color:#aaa}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:7px}
+.stat{text-align:center;background:#292929;border-radius:9px;padding:6px 1px}
+.stat b{display:block;font-size:20px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:7.5px;font-weight:800;color:#c9cdd2;margin-top:3px;letter-spacing:.25px}
+main{max-width:600px;margin:0 auto;padding:10px 11px 14px}
+.gamebar{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#fff;border-radius:15px;padding:10px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:11px}
+.gamebar label{font-size:11px;font-weight:800;color:#68707a;display:block;margin-bottom:3px}
+.gamebar select,.gamebar input{height:42px;width:100%;border:1px solid #d9dde2;border-radius:11px;padding:0 9px;font-size:16px;background:#fff}
+.title{font-size:12px;font-weight:850;letter-spacing:.7px;color:#666;margin:0 0 7px}
+.section{margin-bottom:11px}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.play{min-height:64px;border:0;border-radius:15px;background:#fff;box-shadow:0 2px 9px rgba(0,0,0,.08);font-size:16px;font-weight:850;color:#1769d1}
+.play.good{background:#dff5d8;color:#145f10}.play.bad{background:#ffe2e2;color:#a71919}
+.play:active,.bottom button:active,.actions button:active,.sign:active{transform:scale(.98)}
+.recent{background:#fff;border-radius:15px;padding:10px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.row{padding:9px 1px;border-bottom:1px solid #e5e7ea;font-size:13px;line-height:1.3}.row:last-child{border-bottom:0}.empty{font-size:12px;color:#68707a}
+.bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #d9dde2}
+.bottom button{height:49px;border:0;border-radius:13px;background:#111;color:#fff;font-size:10px;font-weight:850}
+.modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.56);align-items:flex-end}.modal.show{display:flex}
+.sheet{width:100%;max-width:600px;margin:0 auto;background:#fff;border-radius:23px 23px 0 0;padding:11px 14px calc(15px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.25)}
+.grab{width:40px;height:5px;border-radius:99px;background:#c9ccd0;margin:0 auto 12px}
+.sheet h2{font-size:23px;margin:0 0 11px}
+.yardline{display:grid;grid-template-columns:1fr 66px;gap:7px}
+.yardline input{height:65px;border:2px solid #9ec8ff;border-radius:16px;padding:0 13px;font-size:29px;outline:0}.yardline input:focus{border-color:#1769d1}
+.sign{height:65px;border:0;border-radius:16px;background:#eaf2ff;color:#1769d1;font-size:33px;font-weight:900}.sign.neg{background:#ffe2e2;color:#c51f1f}
+.signhelp{text-align:center;color:#666;font-size:11px;font-weight:750;margin:5px 0 10px}
+.explain{font-size:12px;color:#666;line-height:1.35;margin-bottom:11px}
+.actions{display:grid;grid-template-columns:1fr 1.35fr;gap:7px}.actions button{height:55px;border:0;border-radius:15px;font-size:15px;font-weight:850}.cancel{background:#eee}.save{background:#dff5d8;color:#145f10}
+#noteText{width:100%;height:55px;border:1px solid #ccc;border-radius:15px;padding:0 12px;font-size:16px;outline:0}
+@media(max-height:700px){.play{min-height:57px}.stat{padding:5px 1px}.stat b{font-size:18px}.meta input{height:40px}.gamebar{padding:8px}}
 </style>
 </head>
 <body>
 <header>
-<div class="top"><h1>🏈 Varsity QB Scorer</h1><span class="pill">LIVE GAME</span></div>
+<div class="top"><h1>🏈 Varsity QB Scorer</h1><span class="live">LIVE</span></div>
 <div class="meta">
-<input id="qb" placeholder="QB name"><input id="opponent" placeholder="Opponent"><input id="team" placeholder="Team"><input id="score" placeholder="Score">
+<input id="qb" placeholder="QB name" autocomplete="off">
+<input id="opponent" placeholder="Opponent" autocomplete="off">
+<input id="team" placeholder="Team" autocomplete="off">
+<input id="score" placeholder="Score" autocomplete="off">
 </div>
 <div class="stats">
-<div class="stat"><b id="comp">0</b><span>COMP</span></div><div class="stat"><b id="att">0</b><span>ATT</span></div><div class="stat"><b id="pct">0%</b><span>CMP %</span></div><div class="stat"><b id="py">0</b><span>PASS YDS</span></div>
-<div class="stat"><b id="ptd">0</b><span>PASS TD</span></div><div class="stat"><b id="int">0</b><span>INT</span></div><div class="stat"><b id="ra">0</b><span>RUSH ATT</span></div><div class="stat"><b id="ry">0</b><span>RUSH YDS</span></div>
+<div class="stat"><b id="comp">0</b><span>COMP</span></div>
+<div class="stat"><b id="att">0</b><span>ATT</span></div>
+<div class="stat"><b id="pct">0%</b><span>CMP%</span></div>
+<div class="stat"><b id="py">0</b><span>PASS YDS</span></div>
+<div class="stat"><b id="ptd">0</b><span>PASS TD</span></div>
+<div class="stat"><b id="int">0</b><span>INT</span></div>
+<div class="stat"><b id="ra">0</b><span>RUSH ATT</span></div>
+<div class="stat"><b id="ry">0</b><span>RUSH YDS</span></div>
 </div>
 </header>
+
 <main>
-<div class="card"><div class="title">GAME / DRIVE</div><div class="grid">
+<div class="gamebar">
 <div><label>Quarter</label><select id="q"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>OT</option></select></div>
-<div><label>Drive #</label><input id="drive" value="1" inputmode="numeric"></div>
-<div><label>Down</label><select id="down"><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option></select></div>
-<div><label>Distance to 1st</label><input id="dist" value="10" inputmode="decimal"></div>
-</div></div>
-<div class="next" id="next">Next: 1st &amp; 10</div>
+<div><label>Game Score</label><input id="gamescore" placeholder="e.g. 14-7" autocomplete="off"></div>
+</div>
+
 <div class="section"><div class="title">PASSING</div><div class="buttons">
-<button class="play good" data-play="COMPLETE">✓ COMPLETE</button><button class="play" data-play="INCOMPLETE">INCOMPLETE</button>
-<button class="play bad" data-play="INTERCEPTION">⚠ INTERCEPTION</button><button class="play" data-play="SPIKE">SPIKE</button>
+<button class="play good" data-play="COMPLETE">✓ COMPLETE</button>
+<button class="play" data-play="INCOMPLETE">INCOMPLETE</button>
+<button class="play bad" data-play="INTERCEPTION">⚠ INTERCEPTION</button>
+<button class="play" data-play="SPIKE">SPIKE</button>
 </div></div>
+
 <div class="section"><div class="title">RUSHING / NEGATIVE PLAYS</div><div class="buttons">
-<button class="play good" data-play="QB RUN">QB RUN</button><button class="play" data-play="SCRAMBLE">SCRAMBLE</button>
-<button class="play" data-play="SACK">SACK</button><button class="play bad" data-play="FUMBLE">FUMBLE</button>
+<button class="play good" data-play="QB RUN">QB RUN</button>
+<button class="play" data-play="SCRAMBLE">SCRAMBLE</button>
+<button class="play" data-play="SACK">SACK</button>
+<button class="play bad" data-play="FUMBLE">FUMBLE</button>
 </div></div>
-<div class="section"><div class="title">OTHER</div><div class="buttons"><button class="play" id="noteBtn">NOTE / RECEIVER</button></div></div>
+
+<div class="section"><div class="title">OTHER</div><div class="buttons">
+<button class="play" id="noteBtn">NOTE / RECEIVER</button>
+</div></div>
+
 <div class="recent"><div class="title">RECENT PLAYS</div><div id="recent"><div class="empty">No plays yet.</div></div></div>
 </main>
-<nav class="bottom"><button id="undo">↩ UNDO</button><button id="summary">SUMMARY</button><button id="export">EXPORT</button><button id="newgame">NEW GAME</button></nav>
 
-<div class="modal" id="yardModal"><div class="sheet"><div class="grab"></div><h2 id="yardTitle">Yards</h2>
-<div class="yardline"><input id="yards" type="text" inputmode="decimal" placeholder="Enter yards" autocomplete="off"><button id="sign" type="button">+</button></div>
+<nav class="bottom">
+<button id="undo">↩ UNDO</button><button id="summary">SUMMARY</button><button id="export">EXPORT</button><button id="newgame">NEW GAME</button>
+</nav>
+
+<div class="modal" id="yardModal"><div class="sheet"><div class="grab"></div>
+<h2 id="yardTitle">Yards</h2>
+<div class="yardline"><input id="yards" type="text" inputmode="decimal" placeholder="Enter yards" autocomplete="off"><button class="sign" id="sign" type="button">+</button></div>
 <div class="signhelp" id="signhelp">Positive yards</div>
-<div class="explain">For a sack, rushing loss, fumble, or pass completed for loss: tap <b>+</b> so it becomes <b>−</b>, then enter the number. Example: <b>5</b> becomes <b>−5</b>.</div>
+<div class="explain">For a sack, rushing loss, fumble, or pass completed for loss: tap <b>+</b> to change it to <b>−</b>, then enter the number. Example: <b>5 → −5</b>.</div>
 <div class="actions"><button class="cancel" id="cancel">CANCEL</button><button class="save" id="save">SAVE PLAY</button></div>
 </div></div>
 
-<div class="modal" id="noteModal"><div class="sheet"><div class="grab"></div><h2>Note / Receiver</h2><input id="noteText" placeholder="Receiver, note, coverage, etc.">
-<div class="actions" style="margin-top:12px"><button class="cancel" id="noteCancel">CANCEL</button><button class="save" id="noteSave">SAVE NOTE</button></div></div></div>
+<div class="modal" id="noteModal"><div class="sheet"><div class="grab"></div>
+<h2>Note / Receiver</h2><input id="noteText" placeholder="Receiver, note, coverage, etc." autocomplete="off">
+<div class="actions" style="margin-top:11px"><button class="cancel" id="noteCancel">CANCEL</button><button class="save" id="noteSave">SAVE NOTE</button></div>
+</div></div>
 
 <script>
 (function(){
 "use strict";
-var plays=JSON.parse(localStorage.getItem("qb_plays_v11")||"[]"), pending=null, negative=false;
+var plays=JSON.parse(localStorage.getItem("qb_simple_12")||"[]"),pending=null,negative=false;
 function $(id){return document.getElementById(id)}
-["qb","opponent","team","score","q","drive","down","dist"].forEach(function(id){
- var e=$(id), k="qb11_"+id, v=localStorage.getItem(k); if(v!==null)e.value=v;
+["qb","opponent","team","score","q","gamescore"].forEach(function(id){
+ var e=$(id),k="qb_simple_"+id,v=localStorage.getItem(k);if(v!==null)e.value=v;
  e.addEventListener("input",function(){localStorage.setItem(k,e.value)});
  e.addEventListener("change",function(){localStorage.setItem(k,e.value)});
 });
 function show(id){$(id).classList.add("show");document.body.style.overflow="hidden"}
 function hide(id){$(id).classList.remove("show");document.body.style.overflow=""}
 function openPlay(type){
- pending={type:type,q:$("q").value,drive:$("drive").value,down:$("down").value,dist:$("dist").value};
- negative=false;$("sign").textContent="+";$("sign").classList.remove("neg");$("signhelp").textContent="Positive yards";
- $("yards").value="";$("yardTitle").textContent=(type==="SACK"?"Sack yards":type==="FUMBLE"?"Fumble / rushing yards":type==="QB RUN"||type==="SCRAMBLE"?"Rushing yards":"Passing yards");
- show("yardModal");setTimeout(function(){$("yards").focus()},150);
+ pending={type:type,q:$("q").value};
+ negative=false;$("sign").textContent="+";$("sign").classList.remove("neg");$("signhelp").textContent="Positive yards";$("yards").value="";
+ $("yardTitle").textContent=type==="SACK"?"Sack yards":type==="FUMBLE"?"Fumble / rushing yards":(type==="QB RUN"||type==="SCRAMBLE")?"Rushing yards":"Passing yards";
+ show("yardModal");setTimeout(function(){$("yards").focus()},120);
 }
 document.querySelectorAll("[data-play]").forEach(function(b){b.addEventListener("click",function(){openPlay(b.getAttribute("data-play"))})});
 $("sign").addEventListener("click",function(){negative=!negative;$("sign").textContent=negative?"−":"+";$("sign").classList.toggle("neg",negative);$("signhelp").textContent=negative?"Negative yards":"Positive yards"});
-function yard(){
- var s=$("yards").value.trim().replace(",","."), n=Number(s); if(s===""||!Number.isFinite(n))return null;
- return negative?-Math.abs(n):Math.abs(n);
-}
-function advance(y){
- var d=["1st","2nd","3rd","4th"],old=Number($("dist").value)||10,i=d.indexOf($("down").value);
- if(y>=old){$("down").value="1st";$("dist").value="10"}else{$("down").value=d[Math.min(i+1,3)];$("dist").value=String(Math.max(1,old-Math.max(0,y)))}
- localStorage.setItem("qb11_down",$("down").value);localStorage.setItem("qb11_dist",$("dist").value);
-}
+function getYards(){var s=$("yards").value.trim().replace(",","."),n=Number(s);if(s===""||!Number.isFinite(n))return null;return negative?-Math.abs(n):Math.abs(n)}
 $("save").addEventListener("click",function(){
- if(!pending)return;var y=yard();if(y===null){alert("Enter a valid number of yards.");return}
- plays.push({type:pending.type,yards:y,q:pending.q,drive:pending.drive,down:pending.down,dist:pending.dist,note:""});
- localStorage.setItem("qb_plays_v11",JSON.stringify(plays));hide("yardModal");advance(y);render();
+ if(!pending)return;var y=getYards();if(y===null){alert("Enter a valid number of yards.");return}
+ plays.push({type:pending.type,yards:y,q:pending.q,note:""});
+ localStorage.setItem("qb_simple_12",JSON.stringify(plays));hide("yardModal");render();
 });
 $("cancel").addEventListener("click",function(){hide("yardModal")});
 $("yardModal").addEventListener("click",function(e){if(e.target===$("yardModal"))hide("yardModal")});
 $("yards").addEventListener("keydown",function(e){if(e.key==="Enter")$("save").click()});
-$("noteBtn").addEventListener("click",function(){$("noteText").value="";show("noteModal");setTimeout(function(){$("noteText").focus()},150)});
+$("noteBtn").addEventListener("click",function(){$("noteText").value="";show("noteModal");setTimeout(function(){$("noteText").focus()},120)});
 $("noteCancel").addEventListener("click",function(){hide("noteModal")});
-$("noteSave").addEventListener("click",function(){var t=$("noteText").value.trim();if(t){plays.push({type:"NOTE",yards:0,q:$("q").value,drive:$("drive").value,down:$("down").value,dist:$("dist").value,note:t});localStorage.setItem("qb_plays_v11",JSON.stringify(plays));render()}hide("noteModal")});
-$("undo").addEventListener("click",function(){if(!plays.length){alert("No saved play to undo.");return}plays.pop();localStorage.setItem("qb_plays_v11",JSON.stringify(plays));render()});
-$("newgame").addEventListener("click",function(){if(confirm("Start a new game? This clears plays saved on this phone.")){plays=[];localStorage.setItem("qb_plays_v11","[]");$("down").value="1st";$("dist").value="10";$("drive").value="1";render()}});
+$("noteSave").addEventListener("click",function(){var t=$("noteText").value.trim();if(t){plays.push({type:"NOTE",yards:0,q:$("q").value,note:t});localStorage.setItem("qb_simple_12",JSON.stringify(plays));render()}hide("noteModal")});
+$("undo").addEventListener("click",function(){if(!plays.length){alert("No saved play to undo.");return}plays.pop();localStorage.setItem("qb_simple_12",JSON.stringify(plays));render()});
+$("newgame").addEventListener("click",function(){if(confirm("Start a new game? This clears plays saved on this phone.")){plays=[];localStorage.setItem("qb_simple_12","[]");render()}});
 $("summary").addEventListener("click",function(){var s=totals();alert("QB SUMMARY\\n\\nPassing: "+s.c+"/"+s.a+" ("+s.p+"%) for "+s.py+" yds\\nPass TD: "+s.td+"   INT: "+s.i+"\\nRushing: "+s.ra+" attempts for "+s.ry+" yds")});
-$("export").addEventListener("click",function(){var h=["#","Quarter","Drive","Down","Distance","Play","Yards","Note"],rows=[h.join(",")];plays.forEach(function(p,i){rows.push([i+1,p.q,p.drive,p.down,p.dist,p.type,p.yards,p.note].map(function(v){return '"'+String(v||"").replace(/"/g,'""')+'"'}).join(","))});var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.join("\\n")],{type:"text/csv"}));a.download="qb_game_stats.csv";document.body.appendChild(a);a.click();a.remove()});
-function totals(){var s={c:0,a:0,py:0,td:0,i:0,ra:0,ry:0};plays.forEach(function(p){if(p.type==="COMPLETE"){s.c++;s.a++;s.py+=p.yards}else if(p.type==="INCOMPLETE"){s.a++}else if(p.type==="INTERCEPTION"){s.a++;s.i++;s.py+=p.yards}else if(p.type==="SPIKE"){s.a++}else if(p.type==="QB RUN"||p.type==="SCRAMBLE"){s.ra++;s.ry+=p.yards}else if(p.type==="SACK"){s.ry+=p.yards}else if(p.type==="FUMBLE"){s.ra++;s.ry+=p.yards}});s.p=s.a?Math.round(s.c/s.a*100):0;return s}
+$("export").addEventListener("click",function(){
+var rows=[["#","Quarter","Play","Yards","Note"].join(",")];plays.forEach(function(p,i){rows.push([i+1,p.q,p.type,p.yards,p.note].map(function(v){return '"'+String(v||"").replace(/"/g,'""')+'"'}).join(","))});
+var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.join("\\n")],{type:"text/csv"}));a.download="qb_game_stats.csv";document.body.appendChild(a);a.click();a.remove();
+});
+function totals(){var s={c:0,a:0,py:0,td:0,i:0,ra:0,ry:0};plays.forEach(function(p){
+if(p.type==="COMPLETE"){s.c++;s.a++;s.py+=p.yards}
+else if(p.type==="INCOMPLETE"){s.a++}
+else if(p.type==="INTERCEPTION"){s.a++;s.i++;s.py+=p.yards}
+else if(p.type==="SPIKE"){s.a++}
+else if(p.type==="QB RUN"||p.type==="SCRAMBLE"){s.ra++;s.ry+=p.yards}
+else if(p.type==="SACK"){s.ry+=p.yards}
+else if(p.type==="FUMBLE"){s.ra++;s.ry+=p.yards}
+});s.p=s.a?Math.round(s.c/s.a*100):0;return s}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]})}
-function render(){var s=totals();$("comp").textContent=s.c;$("att").textContent=s.a;$("pct").textContent=s.p+"%";$("py").textContent=s.py;$("ptd").textContent=s.td;$("int").textContent=s.i;$("ra").textContent=s.ra;$("ry").textContent=s.ry;$("next").textContent="Next: "+$("down").value+" & "+$("dist").value;
-var r=plays.slice(-10).reverse();$("recent").innerHTML=r.length?r.map(function(p,i){var n=plays.length-i;if(p.type==="NOTE")return '<div class="row">'+n+'. '+esc(p.q)+' • NOTE • '+esc(p.note)+'</div>';var y=p.yards>0?"+"+p.yards:String(p.yards);return '<div class="row">'+n+'. '+esc(p.q)+' • '+esc(p.down)+' & '+esc(p.dist)+' • <b>'+esc(p.type)+'</b> '+y+' yds</div>'}).join(""):'<div class="empty">No plays yet.</div>'}
+function render(){var s=totals();$("comp").textContent=s.c;$("att").textContent=s.a;$("pct").textContent=s.p+"%";$("py").textContent=s.py;$("ptd").textContent=s.td;$("int").textContent=s.i;$("ra").textContent=s.ra;$("ry").textContent=s.ry;
+var r=plays.slice(-10).reverse();$("recent").innerHTML=r.length?r.map(function(p,i){var n=plays.length-i;if(p.type==="NOTE")return '<div class="row">'+n+'. '+esc(p.q)+' • NOTE • '+esc(p.note)+'</div>';var y=p.yards>0?"+"+p.yards:String(p.yards);return '<div class="row">'+n+'. '+esc(p.q)+' • <b>'+esc(p.type)+'</b> '+y+' yds</div>'}).join(""):'<div class="empty">No plays yet.</div>'}
 render();
 })();
 </script>
